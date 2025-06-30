@@ -4,12 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
-import { Trophy, CheckCircle, Flame, TrendingUp, Medal, Crown, Clock, Users } from "lucide-react";
+import JoinClassroom from "./join-classroom";
+import { Trophy, CheckCircle, Flame, TrendingUp, Medal, Crown, Clock, Users, Plus } from "lucide-react";
 import { Link } from "wouter";
 
 export default function StudentDashboard() {
   const { user } = useAuth();
   const [selectedClassroom, setSelectedClassroom] = useState<number | null>(null);
+  const [showJoinClassroom, setShowJoinClassroom] = useState(false);
 
   const { data: classrooms } = useQuery({
     queryKey: ['/api/classrooms'],
@@ -148,14 +150,24 @@ export default function StudentDashboard() {
           {/* Classroom Selector */}
           <Card className="mb-6">
             <CardContent className="p-6">
-              <label className="block text-sm font-medium text-neutral-700 mb-3">Select Classroom</label>
+              <div className="flex justify-between items-center mb-3">
+                <label className="block text-sm font-medium text-neutral-700">Select Classroom</label>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setShowJoinClassroom(true)}
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Join Class
+                </Button>
+              </div>
               <select 
                 className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 value={selectedClassroom || ''}
                 onChange={(e) => setSelectedClassroom(parseInt(e.target.value))}
               >
                 <option value="">Choose a classroom...</option>
-                {classrooms?.map((classroom: any) => (
+                {(classrooms as any[])?.map((classroom: any) => (
                   <option key={classroom.id} value={classroom.id}>
                     {classroom.name} - {classroom.teacher.firstName || classroom.teacher.email}
                   </option>
@@ -163,6 +175,16 @@ export default function StudentDashboard() {
               </select>
             </CardContent>
           </Card>
+          
+          {/* Join Classroom Form */}
+          {showJoinClassroom && (
+            <div className="mb-6">
+              <JoinClassroom 
+                onSuccess={() => setShowJoinClassroom(false)}
+                onCancel={() => setShowJoinClassroom(false)}
+              />
+            </div>
+          )}
           
           {/* Available Problems */}
           {selectedClassroom && (

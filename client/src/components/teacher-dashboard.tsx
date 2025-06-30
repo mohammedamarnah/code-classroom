@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import ProblemForm from "./problem-form";
+import ClassroomForm from "./classroom-form";
 import { useState } from "react";
 import { Presentation, Users, ClipboardList, CheckCircle, Plus, Edit, Eye } from "lucide-react";
 import { Link } from "wouter";
@@ -10,6 +11,7 @@ import { Link } from "wouter";
 export default function TeacherDashboard() {
   const { user } = useAuth();
   const [showProblemForm, setShowProblemForm] = useState(false);
+  const [showClassroomForm, setShowClassroomForm] = useState(false);
   const [selectedClassroom, setSelectedClassroom] = useState<number | null>(null);
 
   const { data: classrooms } = useQuery({
@@ -99,7 +101,7 @@ export default function TeacherDashboard() {
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle>My Classrooms</CardTitle>
-                <Button onClick={() => {/* TODO: Implement classroom creation */}}>
+                <Button onClick={() => setShowClassroomForm(true)}>
                   <Plus className="w-4 h-4 mr-2" />
                   Create Classroom
                 </Button>
@@ -164,6 +166,16 @@ export default function TeacherDashboard() {
                 classrooms={classrooms || []}
                 onSuccess={() => setShowProblemForm(false)}
                 onCancel={() => setShowProblemForm(false)}
+              />
+            </div>
+          )}
+          
+          {/* Classroom Creation Section */}
+          {showClassroomForm && (
+            <div className="mt-8">
+              <ClassroomForm 
+                onSuccess={() => setShowClassroomForm(false)}
+                onCancel={() => setShowClassroomForm(false)}
               />
             </div>
           )}
