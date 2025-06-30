@@ -175,6 +175,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test problem route
+  app.post('/api/problems/:id/test', isAuthenticated, async (req: any, res) => {
+    try {
+      const problemId = parseInt(req.params.id);
+      const { code } = req.body;
+      
+      const problem = await storage.getProblem(problemId);
+      if (!problem) {
+        return res.status(404).json({ message: "Problem not found" });
+      }
+
+      // Execute the code
+      const result = await executeJavaCode(code, problem.testCases as any[]);
+      
+      res.json({
+        status: result.status,
+        output: result.output,
+        error: result.error,
+        executionTime: result.executionTime
+      });
+    } catch (error) {
+      console.error("Error testing code:", error);
+      res.status(500).json({ message: "Failed to test code" });
+    }
+  });
+
   // Submission routes
   app.post('/api/submissions', isAuthenticated, async (req: any, res) => {
     try {

@@ -1,9 +1,14 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Play, Send, X } from "lucide-react";
+import CodeMirror from '@uiw/react-codemirror';
+import { java } from '@codemirror/lang-java';
+import { oneDark } from '@codemirror/theme-one-dark';
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface CodeEditorProps {
   problem: any;
@@ -15,6 +20,29 @@ interface CodeEditorProps {
 
 export default function CodeEditor({ problem, isOpen, onClose, onSubmit, isSubmitting }: CodeEditorProps) {
   const [code, setCode] = useState(problem?.starterCode || '');
+  const [testResult, setTestResult] = useState<any>(null);
+  const { toast } = useToast();
+
+  const testMutation = useMutation({
+    mutationFn: async (code: string) => {
+      return await apiRequest(`/api/problems/${problem.id}/test`, 'POST', { code });
+    },
+    onSuccess: (result: any) => {
+      setTestResult(result);
+      toast({
+        title: result.status === 'passed' ? "Test Passed!" : "Test Failed",
+        description: result.status === 'passed' ? "All test cases passed!" : result.error || "Some test cases failed",
+        variant: result.status === 'passed' ? "default" : "destructive"
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Test Error",
+        description: "Failed to run test",
+        variant: "destructive"
+      });
+    }
+  });
 
   if (!isOpen) return null;
 
@@ -30,6 +58,11 @@ export default function CodeEditor({ problem, isOpen, onClose, onSubmit, isSubmi
   const handleSubmit = () => {
     if (!code.trim()) return;
     onSubmit(code);
+  };
+
+  const handleTest = () => {
+    if (!code.trim()) return;
+    testMutation.mutate(code);
   };
 
   return (
@@ -79,8 +112,17 @@ export default function CodeEditor({ problem, isOpen, onClose, onSubmit, isSubmi
             <div className="flex justify-between items-center mb-3">
               <h4 className="font-medium text-neutral-900">Your Solution</h4>
               <div className="flex space-x-2">
-                <Button variant="outline" size="sm" disabled={isSubmitting}>
-                  <Play className="w-4 h-4 mr-1" />
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleTest} 
+                  disabled={isSubmitting || testMutation.isPending || !code.trim()}
+                >
+                  {testMutation.isPending ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-neutral-600 mr-1" />
+                  ) : (
+                    <Play className="w-4 h-4 mr-1" />
+                  )}
                   Test
                 </Button>
                 <Button size="sm" onClick={handleSubmit} disabled={isSubmitting || !code.trim()}>
@@ -94,17 +136,56 @@ export default function CodeEditor({ problem, isOpen, onClose, onSubmit, isSubmi
               </div>
             </div>
 
-            <Textarea
-              className="w-full h-64 font-mono text-sm"
-              placeholder={problem.starterCode || `public class Solution {
+            <div className="border rounded-md overflow-hidden">
+              <CodeMirror
+                value={code}
+                height="300px"
+                theme={oneDark}
+                extensions={[java()]}
+                onChange={(value) => setCode(value)}
+                placeholder={problem.starterCode || `public class Solution {
     public static void main(String[] args) {
         // Your code here
         
     }
 }`}
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-            />
+              />
+            </div>
+
+            {/* Test Result Display */}
+            {testResult && (
+              <div className="mt-4 p-4 border rounded-md">
+                <h5 className="font-medium mb-2">Test Result</h5>
+                <div className={`p-3 rounded-md ${
+                  testResult.status === 'passed' 
+                    ? 'bg-green-50 text-green-800 border border-green-200' 
+                    : 'bg-red-50 text-red-800 border border-red-200'
+                }`}>
+                  <div className="font-medium mb-1">
+                    Status: {testResult.status === 'passed' ? '✅ Passed' : '❌ Failed'}
+                  </div>
+                  {testResult.executionTime && (
+                    <div className="text-sm">Execution Time: {testResult.executionTime}ms</div>
+                  )}
+                  {testResult.output && (
+                    <div className="mt-2">
+                      <div className="text-sm font-medium">Output:</div>
+                      <pre className="text-xs bg-neutral-100 p-2 rounded mt-1 whitespace-pre-wrap">
+                        {testResult.output}
+                      </pre>
+                    </div>
+                  )}
+                  {testResult.error && (
+                    <div className="mt-2">
+                      <div className="text-sm font-medium">Error:</div>
+                      <pre className="text-xs bg-neutral-100 p-2 rounded mt-1 whitespace-pre-wrap">
+                        {testResult.error}
+                      </pre>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

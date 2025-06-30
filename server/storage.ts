@@ -44,7 +44,7 @@ export interface IStorage {
   getClassroomProblems(classroomId: number): Promise<Problem[]>;
   
   // Submission operations
-  createSubmission(submission: InsertSubmission): Promise<Submission>;
+  createSubmission(submission: InsertSubmission & { studentId: string; status: string; pointsEarned: number; executionTime?: number; output?: string; error?: string }): Promise<Submission>;
   getSubmission(id: number): Promise<Submission | undefined>;
   getStudentSubmissions(studentId: string, problemId?: number): Promise<Submission[]>;
   getProblemSubmissions(problemId: number): Promise<(Submission & { student: User })[]>;
@@ -185,7 +185,7 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(problems).where(eq(problems.classroomId, classroomId)).orderBy(desc(problems.createdAt));
   }
 
-  async createSubmission(submission: InsertSubmission): Promise<Submission> {
+  async createSubmission(submission: InsertSubmission & { studentId: string; status: string; pointsEarned: number; executionTime?: number; output?: string; error?: string }): Promise<Submission> {
     const [newSubmission] = await db.insert(submissions).values(submission).returning();
     return newSubmission;
   }

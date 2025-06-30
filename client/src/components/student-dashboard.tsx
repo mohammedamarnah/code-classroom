@@ -60,7 +60,7 @@ export default function StudentDashboard() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-3xl font-bold text-neutral-900 mb-2">
-              Welcome back, {user?.firstName || user?.email}!
+              Welcome back, {user?.firstName || user?.email?.split('@')[0] || 'Student'}!
             </h2>
             <p className="text-neutral-600">Continue your coding journey</p>
           </div>
