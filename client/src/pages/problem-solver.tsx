@@ -1,23 +1,56 @@
 import { useParams } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Clock, Trophy, Play, Send } from "lucide-react";
 import { Link } from "wouter";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import CodeMirror from '@uiw/react-codemirror';
+import { java } from '@codemirror/lang-java';
+import { oneDark } from '@codemirror/theme-one-dark';
+import { indentWithTab } from '@codemirror/commands';
+import { keymap, EditorView } from '@codemirror/view';
 
 export default function ProblemSolver() {
   const { id } = useParams();
   const problemId = parseInt(id!);
   const [code, setCode] = useState('');
+  const [testResult, setTestResult] = useState<any>(null);
   const { toast } = useToast();
 
   const { data: problem, isLoading } = useQuery({
     queryKey: [`/api/problems/${problemId}`],
+  });
+
+  // Initialize code with starter code when problem data loads
+  useEffect(() => {
+    if (problem?.starterCode && !code) {
+      setCode(problem.starterCode);
+    }
+  }, [problem, code]);
+
+  const testMutation = useMutation({
+    mutationFn: async (code: string) => {
+      return await apiRequest(`/api/problems/${problemId}/test`, 'POST', { code });
+    },
+    onSuccess: (result: any) => {
+      setTestResult(result);
+      toast({
+        title: result.status === 'passed' ? "Test Passed!" : "Test Failed",
+        description: result.status === 'passed' ? "All test cases passed!" : result.error || "Some test cases failed",
+        variant: result.status === 'passed' ? "default" : "destructive"
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Test Error",
+        description: error.message || "Failed to run test",
+        variant: "destructive"
+      });
+    }
   });
 
   const submitMutation = useMutation({
@@ -68,6 +101,18 @@ export default function ProblemSolver() {
       case 'hard': return 'bg-red-500 text-white';
       default: return 'bg-neutral-500 text-white';
     }
+  };
+
+  const handleTest = () => {
+    if (!code.trim()) {
+      toast({
+        title: "No Code",
+        description: "Please write some code before testing.",
+        variant: "destructive",
+      });
+      return;
+    }
+    testMutation.mutate(code);
   };
 
   const handleSubmit = () => {
@@ -145,9 +190,14 @@ export default function ProblemSolver() {
                   <Button 
                     variant="outline" 
                     size="sm"
-                    disabled={submitMutation.isPending}
+                    onClick={handleTest}
+                    disabled={submitMutation.isPending || testMutation.isPending || !code.trim()}
                   >
-                    <Play className="w-4 h-4 mr-1" />
+                    {testMutation.isPending ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-neutral-600 mr-1" />
+                    ) : (
+                      <Play className="w-4 h-4 mr-1" />
+                    )}
                     Test
                   </Button>
                   <Button 
@@ -166,17 +216,47 @@ export default function ProblemSolver() {
               </div>
             </CardHeader>
             <CardContent>
-              <Textarea
-                className="w-full h-96 font-mono text-sm"
-                placeholder={problem?.starterCode || `public class Solution {
+              <div className="border rounded-md overflow-hidden">
+                <CodeMirror
+                  value={code}
+                  height="400px"
+                  theme={oneDark}
+                  extensions={[
+                    java(),
+                    keymap.of([indentWithTab]),
+                    EditorView.theme({
+                      '&': {
+                        fontSize: '14px'
+                      },
+                      '.cm-content': {
+                        padding: '12px'
+                      },
+                      '.cm-focused': {
+                        outline: 'none'
+                      }
+                    }),
+                    EditorView.lineWrapping
+                  ]}
+                  onChange={(value) => setCode(value)}
+                  placeholder={problem?.starterCode || `public class Solution {
     public static void main(String[] args) {
         // Your code here
         
     }
 }`}
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-              />
+                  basicSetup={{
+                    lineNumbers: true,
+                    foldGutter: true,
+                    dropCursor: false,
+                    allowMultipleSelections: false,
+                    indentOnInput: true,
+                    bracketMatching: true,
+                    closeBrackets: true,
+                    autocompletion: true,
+                    highlightSelectionMatches: true
+                  }}
+                />
+              </div>
             </CardContent>
           </Card>
         </div>
