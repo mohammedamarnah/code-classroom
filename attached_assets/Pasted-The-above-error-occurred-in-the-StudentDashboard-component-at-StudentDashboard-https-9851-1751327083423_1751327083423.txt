@@ -1,0 +1,26 @@
+The above error occurred in the <StudentDashboard> component:
+
+    at StudentDashboard (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/src/components/student-dashboard.tsx:29:44)
+    at div
+    at Dashboard (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/src/pages/dashboard.tsx:26:31)
+    at Route (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=23059480:323:16)
+    at Switch (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=23059480:379:17)
+    at Router (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/src/App.tsx?v=G15nblNvpM5xkHqSIliWS:31:42)
+    at Provider (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-QADB63TU.js?v=23059480:42:15)
+    at TooltipProvider (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=23059480:52:5)
+    at QueryClientProvider (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=23059480:2805:3)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+Cannot read properties of undefined (reading 'firstName')
+at https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/src/components/student-dashboard.tsx:400:39
+at Array.map (<anonymous>)
+at StudentDashboard (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/src/components/student-dashboard.tsx:396:29)
+at renderWithHooks (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WERSD76P.js?v=23059480:11548:26)
+at mountIndeterminateComponent (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WERSD76P.js?v=23059480:14926:21)
+at beginWork (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WERSD76P.js?v=23059480:15914:22)
+at beginWork$1 (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WERSD76P.js?v=23059480:19753:22)
+at performUnitOfWork (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WERSD76P.js?v=23059480:19198:20)
+at workLoopSync (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WERSD76P.js?v=23059480:19137:13)
+at renderRootSync (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WERSD76P.js?v=23059480:19116:15)
