@@ -153,8 +153,8 @@ export const achievementsRelations = relations(achievements, ({ one }) => ({
 
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users);
-export const insertClassroomSchema = createInsertSchema(classrooms).omit({ id: true, inviteCode: true, createdAt: true });
-export const insertProblemSchema = createInsertSchema(problems).omit({ id: true, createdAt: true });
+export const insertClassroomSchema = createInsertSchema(classrooms).omit({ id: true, inviteCode: true, createdAt: true, teacherId: true });
+export const insertProblemSchema = createInsertSchema(problems).omit({ id: true, createdAt: true, createdBy: true });
 export const insertSubmissionSchema = createInsertSchema(submissions).omit({ id: true, submittedAt: true });
 export const insertEnrollmentSchema = createInsertSchema(classroomEnrollments).omit({ id: true, enrolledAt: true });
 

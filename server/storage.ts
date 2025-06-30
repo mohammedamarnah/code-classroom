@@ -27,7 +27,7 @@ export interface IStorage {
   updateUserLevel(userId: string, level: number): Promise<void>;
   
   // Classroom operations
-  createClassroom(classroom: InsertClassroom): Promise<Classroom>;
+  createClassroom(classroom: InsertClassroom & { teacherId: string }): Promise<Classroom>;
   getClassroom(id: number): Promise<Classroom | undefined>;
   getClassroomsByTeacher(teacherId: string): Promise<Classroom[]>;
   getClassroomsByStudent(studentId: string): Promise<(Classroom & { teacher: User })[]>;
@@ -39,7 +39,7 @@ export interface IStorage {
   isStudentEnrolled(classroomId: number, studentId: string): Promise<boolean>;
   
   // Problem operations
-  createProblem(problem: InsertProblem): Promise<Problem>;
+  createProblem(problem: InsertProblem & { createdBy: string }): Promise<Problem>;
   getProblem(id: number): Promise<Problem | undefined>;
   getClassroomProblems(classroomId: number): Promise<Problem[]>;
   
@@ -104,7 +104,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId));
   }
 
-  async createClassroom(classroom: InsertClassroom): Promise<Classroom> {
+  async createClassroom(classroom: InsertClassroom & { teacherId: string }): Promise<Classroom> {
     const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     const [newClassroom] = await db
       .insert(classrooms)
@@ -171,7 +171,7 @@ export class DatabaseStorage implements IStorage {
     return !!enrollment;
   }
 
-  async createProblem(problem: InsertProblem): Promise<Problem> {
+  async createProblem(problem: InsertProblem & { createdBy: string }): Promise<Problem> {
     const [newProblem] = await db.insert(problems).values(problem).returning();
     return newProblem;
   }
