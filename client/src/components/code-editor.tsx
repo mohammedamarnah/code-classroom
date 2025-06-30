@@ -25,9 +25,11 @@ export default function CodeEditor({ problem, isOpen, onClose, onSubmit, isSubmi
 
   const testMutation = useMutation({
     mutationFn: async (code: string) => {
+      console.log('Testing code for problem:', problem.id);
       return await apiRequest(`/api/problems/${problem.id}/test`, 'POST', { code });
     },
     onSuccess: (result: any) => {
+      console.log('Test result:', result);
       setTestResult(result);
       toast({
         title: result.status === 'passed' ? "Test Passed!" : "Test Failed",
@@ -35,10 +37,11 @@ export default function CodeEditor({ problem, isOpen, onClose, onSubmit, isSubmi
         variant: result.status === 'passed' ? "default" : "destructive"
       });
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error('Test error:', error);
       toast({
         title: "Test Error",
-        description: "Failed to run test",
+        description: error.message || "Failed to run test",
         variant: "destructive"
       });
     }
