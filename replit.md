@@ -131,7 +131,18 @@ CodeClassroom is a comprehensive Java programming education platform that combin
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes
+
+- June 30, 2025 (11:42 PM): Fixed syntax highlighting in code editor
+  - Replaced basic textarea with CodeMirror editor in problem solver page
+  - Added Java syntax highlighting with proper language extensions
+  - Configured editor features: line numbers, bracket matching, auto-completion
+  - Added test functionality with loading states
+  - Fixed React hooks compatibility issues and user loading states
+  - Syntax highlighting now working properly for Java code
+
 ## Changelog
 
 Changelog:
 - June 30, 2025. Initial setup
+- June 30, 2025. Enhanced code editor with Java syntax highlighting
