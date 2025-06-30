@@ -176,7 +176,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Test problem route
-  app.post('/api/problems/:id/test', isAuthenticated, async (req: any, res) => {
+  app.post('/api/problems/:id/test', async (req: any, res) => {
     try {
       const problemId = parseInt(req.params.id);
       const { code } = req.body;

@@ -6,6 +6,8 @@ import { Play, Send, X } from "lucide-react";
 import CodeMirror from '@uiw/react-codemirror';
 import { java } from '@codemirror/lang-java';
 import { oneDark } from '@codemirror/theme-one-dark';
+import { indentWithTab } from '@codemirror/commands';
+import { keymap, EditorView } from '@codemirror/view';
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -144,7 +146,22 @@ export default function CodeEditor({ problem, isOpen, onClose, onSubmit, isSubmi
                 value={code}
                 height="300px"
                 theme={oneDark}
-                extensions={[java()]}
+                extensions={[
+                  java(),
+                  keymap.of([indentWithTab]),
+                  EditorView.theme({
+                    '&': {
+                      fontSize: '14px'
+                    },
+                    '.cm-content': {
+                      padding: '12px'
+                    },
+                    '.cm-focused': {
+                      outline: 'none'
+                    }
+                  }),
+                  EditorView.lineWrapping
+                ]}
                 onChange={(value) => setCode(value)}
                 placeholder={problem.starterCode || `public class Solution {
     public static void main(String[] args) {
@@ -152,6 +169,17 @@ export default function CodeEditor({ problem, isOpen, onClose, onSubmit, isSubmi
         
     }
 }`}
+                basicSetup={{
+                  lineNumbers: true,
+                  foldGutter: true,
+                  dropCursor: false,
+                  allowMultipleSelections: false,
+                  indentOnInput: true,
+                  bracketMatching: true,
+                  closeBrackets: true,
+                  autocompletion: true,
+                  highlightSelectionMatches: true
+                }}
               />
             </div>
 
