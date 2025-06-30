@@ -9,25 +9,38 @@ import { Trophy, CheckCircle, Flame, TrendingUp, Medal, Crown, Clock, Users, Plu
 import { Link } from "wouter";
 
 export default function StudentDashboard() {
-  const { user } = useAuth();
+  const { user, isLoading: userLoading } = useAuth();
   const [selectedClassroom, setSelectedClassroom] = useState<number | null>(null);
   const [showJoinClassroom, setShowJoinClassroom] = useState(false);
+
+  // Show loading state while user data is being fetched
+  if (userLoading || !user) {
+    return (
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-neutral-600">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   const { data: classrooms } = useQuery({
     queryKey: ['/api/classrooms'],
   });
 
   const { data: achievements } = useQuery({
-    queryKey: [`/api/achievements/${user?.id}`],
+    queryKey: [`/api/achievements/${user.id}`],
+    enabled: !!user?.id,
   });
 
   const { data: problems } = useQuery({
-    queryKey: selectedClassroom ? [`/api/classrooms/${selectedClassroom}/problems`] : null,
+    queryKey: [`/api/classrooms/${selectedClassroom}/problems`],
     enabled: !!selectedClassroom,
   });
 
   const { data: leaderboard } = useQuery({
-    queryKey: selectedClassroom ? [`/api/classrooms/${selectedClassroom}/leaderboard`] : null,
+    queryKey: [`/api/classrooms/${selectedClassroom}/leaderboard`],
     enabled: !!selectedClassroom,
   });
 
