@@ -25,7 +25,7 @@ export default function StudentDashboard() {
     );
   }
 
-  const { data: classrooms } = useQuery({
+  const { data: classrooms, isLoading: classroomsLoading } = useQuery({
     queryKey: ['/api/classrooms'],
   });
 
@@ -44,10 +44,12 @@ export default function StudentDashboard() {
     enabled: !!selectedClassroom,
   });
 
-  const selectedClassroomData = classrooms?.find((c: any) => c.id === selectedClassroom);
+  const selectedClassroomData = (classrooms && Array.isArray(classrooms)) 
+    ? classrooms.find((c: any) => c.id === selectedClassroom) 
+    : null;
 
   // Auto-select first classroom if none selected
-  if (!selectedClassroom && classrooms?.length > 0) {
+  if (!selectedClassroom && classrooms && Array.isArray(classrooms) && classrooms.length > 0) {
     setSelectedClassroom(classrooms[0].id);
   }
 
@@ -60,7 +62,9 @@ export default function StudentDashboard() {
     }
   };
 
-  const userRank = leaderboard?.findIndex((student: any) => student.id === user?.id) + 1 || 0;
+  const userRank = (leaderboard && Array.isArray(leaderboard) && user) 
+    ? leaderboard.findIndex((student: any) => student.id === user?.id) + 1 
+    : 0;
   const level = user?.level || 1;
   const currentXP = user?.totalPoints || 0;
   const nextLevelXP = level * 1000;
@@ -180,9 +184,9 @@ export default function StudentDashboard() {
                 onChange={(e) => setSelectedClassroom(parseInt(e.target.value))}
               >
                 <option value="">Choose a classroom...</option>
-                {(classrooms as any[])?.map((classroom: any) => (
+                {classrooms && Array.isArray(classrooms) && classrooms.map((classroom: any) => (
                   <option key={classroom.id} value={classroom.id}>
-                    {classroom.name} - {classroom.teacher.firstName || classroom.teacher.email}
+                    {classroom.name} - {classroom.teacher?.firstName || classroom.teacher?.email || 'Teacher'}
                   </option>
                 ))}
               </select>
@@ -206,13 +210,13 @@ export default function StudentDashboard() {
                 <CardTitle>Available Problems</CardTitle>
               </CardHeader>
               <CardContent>
-                {problems?.length === 0 ? (
+                {problems && Array.isArray(problems) && problems.length === 0 ? (
                   <div className="text-center py-8 text-neutral-500">
                     No problems available yet.
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {problems?.map((problem: any) => (
+                    {problems && Array.isArray(problems) && problems.map((problem: any) => (
                       <div key={problem.id} className="border border-neutral-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
@@ -255,13 +259,13 @@ export default function StudentDashboard() {
                 <CardTitle>Class Leaderboard</CardTitle>
               </CardHeader>
               <CardContent>
-                {leaderboard?.length === 0 ? (
+                {leaderboard && Array.isArray(leaderboard) && leaderboard.length === 0 ? (
                   <div className="text-center py-4 text-neutral-500">
                     No students enrolled yet.
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {leaderboard?.slice(0, 5).map((student: any, index: number) => (
+                    {leaderboard && Array.isArray(leaderboard) && leaderboard.slice(0, 5).map((student: any, index: number) => (
                       <div key={student.id} className={`flex items-center space-x-3 p-3 rounded-lg ${
                         student.id === user?.id 
                           ? 'bg-gradient-to-r from-accent to-orange-600 text-white' 
@@ -305,13 +309,13 @@ export default function StudentDashboard() {
               <CardTitle>Recent Achievements</CardTitle>
             </CardHeader>
             <CardContent>
-              {achievements?.length === 0 ? (
+              {achievements && Array.isArray(achievements) && achievements.length === 0 ? (
                 <div className="text-center py-4 text-neutral-500">
                   No achievements yet. Start solving problems!
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {achievements?.slice(0, 3).map((achievement: any) => (
+                  {achievements && Array.isArray(achievements) && achievements.slice(0, 3).map((achievement: any) => (
                     <div key={achievement.id} className="flex items-center space-x-3 p-3 bg-neutral-50 rounded-lg">
                       <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center text-white">
                         <Trophy className="w-5 h-5" />
