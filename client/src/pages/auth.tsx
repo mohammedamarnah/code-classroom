@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Link, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import { Code, Mail, User, Lock } from "lucide-react";
 import { emailSignupSchema, type EmailSignup } from "@shared/schema";
 import { z } from "zod";
@@ -20,36 +20,20 @@ const loginSchema = z.object({
 
 type LoginData = z.infer<typeof loginSchema>;
 
-export default function SignupPage() {
+export default function AuthPage() {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const [isLogin, setIsLogin] = useState(false);
 
-  const signupForm = useForm<EmailSignup>({
-    resolver: zodResolver(emailSignupSchema),
+  const form = useForm<EmailSignup & LoginData>({
+    resolver: zodResolver(isLogin ? loginSchema : emailSignupSchema),
     defaultValues: {
       firstName: "",
       email: "",
       password: "",
     },
+    mode: "onChange",
   });
-
-  const loginForm = useForm<LoginData>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  });
-
-  // Reset forms when switching modes
-  useEffect(() => {
-    if (isLogin) {
-      loginForm.reset();
-    } else {
-      signupForm.reset();
-    }
-  }, [isLogin, loginForm, signupForm]);
 
   const signupMutation = useMutation({
     mutationFn: async (data: EmailSignup) => {
@@ -95,12 +79,24 @@ export default function SignupPage() {
     },
   });
 
-  const onSubmitSignup = (data: EmailSignup) => {
-    signupMutation.mutate(data);
+  const onSubmit = (data: EmailSignup & LoginData) => {
+    if (isLogin) {
+      loginMutation.mutate({
+        email: data.email,
+        password: data.password,
+      });
+    } else {
+      signupMutation.mutate({
+        firstName: data.firstName,
+        email: data.email,
+        password: data.password,
+      });
+    }
   };
 
-  const onSubmitLogin = (data: LoginData) => {
-    loginMutation.mutate(data);
+  const handleModeToggle = () => {
+    setIsLogin(!isLogin);
+    form.reset();
   };
 
   return (
@@ -124,11 +120,11 @@ export default function SignupPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {!isLogin ? (
-              <Form {...signupForm}>
-                <form onSubmit={signupForm.handleSubmit(onSubmitSignup)} className="space-y-4">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                {!isLogin && (
                   <FormField
-                    control={signupForm.control}
+                    control={form.control}
                     name="firstName"
                     render={({ field }) => (
                       <FormItem>
@@ -147,123 +143,64 @@ export default function SignupPage() {
                       </FormItem>
                     )}
                   />
-                  
-                  <FormField
-                    control={signupForm.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                            <Input 
-                              type="email" 
-                              placeholder="Enter your email" 
-                              className="pl-10" 
-                              {...field} 
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={signupForm.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                            <Input 
-                              type="password" 
-                              placeholder="Enter your password" 
-                              className="pl-10" 
-                              {...field} 
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
-                    disabled={signupMutation.isPending}
-                  >
-                    {signupMutation.isPending && (
-                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    )}
-                    Create Account
-                  </Button>
-                </form>
-              </Form>
-            ) : (
-              <Form {...loginForm}>
-                <form onSubmit={loginForm.handleSubmit(onSubmitLogin)} className="space-y-4">
-                  <FormField
-                    control={loginForm.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                            <Input 
-                              type="email" 
-                              placeholder="Enter your email" 
-                              className="pl-10" 
-                              {...field} 
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={loginForm.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                            <Input 
-                              type="password" 
-                              placeholder="Enter your password" 
-                              className="pl-10" 
-                              {...field} 
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
-                    disabled={loginMutation.isPending}
-                  >
-                    {loginMutation.isPending && (
-                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    )}
-                    Sign In
-                  </Button>
-                </form>
-              </Form>
-            )}
+                )}
+                
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                          <Input 
+                            type="email" 
+                            placeholder="Enter your email" 
+                            className="pl-10" 
+                            {...field} 
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                          <Input 
+                            type="password" 
+                            placeholder="Enter your password" 
+                            className="pl-10" 
+                            {...field} 
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={signupMutation.isPending || loginMutation.isPending}
+                >
+                  {(signupMutation.isPending || loginMutation.isPending) && (
+                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  )}
+                  {isLogin ? "Sign In" : "Create Account"}
+                </Button>
+              </form>
+            </Form>
             
             <div className="mt-6 space-y-4">
               <div className="relative">
@@ -292,7 +229,7 @@ export default function SignupPage() {
                   Don't have an account?{" "}
                   <button
                     type="button"
-                    onClick={() => setIsLogin(false)}
+                    onClick={handleModeToggle}
                     className="font-medium text-primary hover:underline"
                   >
                     Sign up
@@ -303,7 +240,7 @@ export default function SignupPage() {
                   Already have an account?{" "}
                   <button
                     type="button"
-                    onClick={() => setIsLogin(true)}
+                    onClick={handleModeToggle}
                     className="font-medium text-primary hover:underline"
                   >
                     Sign in

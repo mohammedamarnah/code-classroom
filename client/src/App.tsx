@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import Landing from "@/pages/landing";
-import SignupPage from "@/pages/signup";
+import AuthPage from "@/pages/auth";
 import Dashboard from "@/pages/dashboard";
 import Classroom from "@/pages/classroom";
 import ProblemSolver from "@/pages/problem-solver";
@@ -19,7 +19,7 @@ function Router() {
       {isLoading || !isAuthenticated ? (
         <>
           <Route path="/" component={Landing} />
-          <Route path="/signup" component={SignupPage} />
+          <Route path="/signup" component={AuthPage} />
         </>
       ) : (
         <>
