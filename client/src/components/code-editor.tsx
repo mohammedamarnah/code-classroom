@@ -3,11 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Play, Send, X } from "lucide-react";
-import CodeMirror from '@uiw/react-codemirror';
-import { java } from '@codemirror/lang-java';
-import { oneDark } from '@codemirror/theme-one-dark';
-import { indentWithTab } from '@codemirror/commands';
-import { keymap, EditorView } from '@codemirror/view';
+import CodeMirror from "@uiw/react-codemirror";
+import { java } from "@codemirror/lang-java";
+import { oneDark } from "@codemirror/theme-one-dark";
+import { indentWithTab } from "@codemirror/commands";
+import { keymap, EditorView } from "@codemirror/view";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -20,43 +20,58 @@ interface CodeEditorProps {
   isSubmitting?: boolean;
 }
 
-export default function CodeEditor({ problem, isOpen, onClose, onSubmit, isSubmitting }: CodeEditorProps) {
-  const [code, setCode] = useState(problem?.starterCode || '');
+export default function CodeEditor({
+  problem,
+  isOpen,
+  onClose,
+  onSubmit,
+  isSubmitting,
+}: CodeEditorProps) {
+  const [code, setCode] = useState(problem?.starterCode || "");
   const [testResult, setTestResult] = useState<any>(null);
   const { toast } = useToast();
 
   const testMutation = useMutation({
     mutationFn: async (code: string) => {
-      console.log('Testing code for problem:', problem.id);
-      return await apiRequest(`/api/problems/${problem.id}/test`, 'POST', { code });
+      console.log("Testing code for problem:", problem.id);
+      return await apiRequest(`/api/problems/${problem.id}/test`, "POST", {
+        code,
+      });
     },
     onSuccess: (result: any) => {
-      console.log('Test result:', result);
+      console.log("Test result:", result);
       setTestResult(result);
       toast({
-        title: result.status === 'passed' ? "Test Passed!" : "Test Failed",
-        description: result.status === 'passed' ? "All test cases passed!" : result.error || "Some test cases failed",
-        variant: result.status === 'passed' ? "default" : "destructive"
+        title: result.status === "passed" ? "Test Passed!" : "Test Failed",
+        description:
+          result.status === "passed"
+            ? "All test cases passed!"
+            : result.error || "Some test cases failed",
+        variant: result.status === "passed" ? "default" : "destructive",
       });
     },
     onError: (error: any) => {
-      console.error('Test error:', error);
+      console.error("Test error:", error);
       toast({
         title: "Test Error",
         description: error.message || "Failed to run test",
-        variant: "destructive"
+        variant: "destructive",
       });
-    }
+    },
   });
 
   if (!isOpen) return null;
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'easy': return 'bg-secondary text-white';
-      case 'medium': return 'bg-accent text-white';
-      case 'hard': return 'bg-red-500 text-white';
-      default: return 'bg-neutral-500 text-white';
+      case "easy":
+        return "bg-secondary text-white";
+      case "medium":
+        return "bg-accent text-white";
+      case "hard":
+        return "bg-red-500 text-white";
+      default:
+        return "bg-neutral-500 text-white";
     }
   };
 
@@ -78,13 +93,19 @@ export default function CodeEditor({ problem, isOpen, onClose, onSubmit, isSubmi
           <div className="flex justify-between items-center">
             <div>
               <div className="flex items-center space-x-3 mb-2">
-                <h3 className="text-lg font-semibold text-neutral-900">{problem.title}</h3>
+                <h3 className="text-lg font-semibold text-neutral-900">
+                  {problem.title}
+                </h3>
                 <Badge className={getDifficultyColor(problem.difficulty)}>
                   {problem.difficulty}
                 </Badge>
-                <span className="text-sm text-accent font-medium">{problem.points} points</span>
+                <span className="text-sm text-accent font-medium">
+                  {problem.points} points
+                </span>
               </div>
-              <p className="text-sm text-neutral-600">{problem.timeLimit} seconds</p>
+              <p className="text-sm text-neutral-600">
+                {problem.timeLimit} seconds
+              </p>
             </div>
             <Button variant="ghost" size="sm" onClick={onClose}>
               <X className="w-5 h-5" />
@@ -96,7 +117,9 @@ export default function CodeEditor({ problem, isOpen, onClose, onSubmit, isSubmi
         <div className="flex h-96">
           {/* Problem Description */}
           <div className="w-1/2 p-6 border-r border-neutral-200 overflow-y-auto">
-            <h4 className="font-medium text-neutral-900 mb-3">Problem Description</h4>
+            <h4 className="font-medium text-neutral-900 mb-3">
+              Problem Description
+            </h4>
             <div className="prose prose-sm text-neutral-600 whitespace-pre-wrap">
               {problem.description}
             </div>
@@ -105,8 +128,13 @@ export default function CodeEditor({ problem, isOpen, onClose, onSubmit, isSubmi
               <div className="mt-6">
                 <h5 className="font-medium text-neutral-900 mb-2">Example:</h5>
                 <div className="bg-neutral-100 p-3 rounded text-sm font-mono">
-                  <div><strong>Input:</strong> {problem.testCases[0]?.input}</div>
-                  <div><strong>Output:</strong> {problem.testCases[0]?.expectedOutput}</div>
+                  <div>
+                    <strong>Input:</strong> {problem.testCases[0]?.input}
+                  </div>
+                  <div>
+                    <strong>Output:</strong>{" "}
+                    {problem.testCases[0]?.expectedOutput}
+                  </div>
                 </div>
               </div>
             )}
@@ -117,20 +145,11 @@ export default function CodeEditor({ problem, isOpen, onClose, onSubmit, isSubmi
             <div className="flex justify-between items-center mb-3">
               <h4 className="font-medium text-neutral-900">Your Solution</h4>
               <div className="flex space-x-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleTest} 
-                  disabled={isSubmitting || testMutation.isPending || !code.trim()}
+                <Button
+                  size="sm"
+                  onClick={handleSubmit}
+                  disabled={isSubmitting || !code.trim()}
                 >
-                  {testMutation.isPending ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-neutral-600 mr-1" />
-                  ) : (
-                    <Play className="w-4 h-4 mr-1" />
-                  )}
-                  Test
-                </Button>
-                <Button size="sm" onClick={handleSubmit} disabled={isSubmitting || !code.trim()}>
                   {isSubmitting ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1" />
                   ) : (
@@ -150,25 +169,28 @@ export default function CodeEditor({ problem, isOpen, onClose, onSubmit, isSubmi
                   java(),
                   keymap.of([indentWithTab]),
                   EditorView.theme({
-                    '&': {
-                      fontSize: '14px'
+                    "&": {
+                      fontSize: "14px",
                     },
-                    '.cm-content': {
-                      padding: '12px'
+                    ".cm-content": {
+                      padding: "12px",
                     },
-                    '.cm-focused': {
-                      outline: 'none'
-                    }
+                    ".cm-focused": {
+                      outline: "none",
+                    },
                   }),
-                  EditorView.lineWrapping
+                  EditorView.lineWrapping,
                 ]}
                 onChange={(value) => setCode(value)}
-                placeholder={problem.starterCode || `public class Solution {
+                placeholder={
+                  problem.starterCode ||
+                  `public class Solution {
     public static void main(String[] args) {
         // Your code here
         
     }
-}`}
+}`
+                }
                 basicSetup={{
                   lineNumbers: true,
                   foldGutter: true,
@@ -178,7 +200,7 @@ export default function CodeEditor({ problem, isOpen, onClose, onSubmit, isSubmi
                   bracketMatching: true,
                   closeBrackets: true,
                   autocompletion: true,
-                  highlightSelectionMatches: true
+                  highlightSelectionMatches: true,
                 }}
               />
             </div>
@@ -187,16 +209,21 @@ export default function CodeEditor({ problem, isOpen, onClose, onSubmit, isSubmi
             {testResult && (
               <div className="mt-4 p-4 border rounded-md">
                 <h5 className="font-medium mb-2">Test Result</h5>
-                <div className={`p-3 rounded-md ${
-                  testResult.status === 'passed' 
-                    ? 'bg-green-50 text-green-800 border border-green-200' 
-                    : 'bg-red-50 text-red-800 border border-red-200'
-                }`}>
+                <div
+                  className={`p-3 rounded-md ${
+                    testResult.status === "passed"
+                      ? "bg-green-50 text-green-800 border border-green-200"
+                      : "bg-red-50 text-red-800 border border-red-200"
+                  }`}
+                >
                   <div className="font-medium mb-1">
-                    Status: {testResult.status === 'passed' ? '✅ Passed' : '❌ Failed'}
+                    Status:{" "}
+                    {testResult.status === "passed" ? "✅ Passed" : "❌ Failed"}
                   </div>
                   {testResult.executionTime && (
-                    <div className="text-sm">Execution Time: {testResult.executionTime}ms</div>
+                    <div className="text-sm">
+                      Execution Time: {testResult.executionTime}ms
+                    </div>
                   )}
                   {testResult.output && (
                     <div className="mt-2">
