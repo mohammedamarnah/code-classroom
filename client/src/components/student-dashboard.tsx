@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/useAuth";
 import JoinClassroom from "./join-classroom";
 import {
@@ -163,14 +164,23 @@ export default function StudentDashboard() {
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle>My Classrooms</CardTitle>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowJoinClassroom(true)}
-                >
-                  <Plus className="w-4 h-4 mr-1" />
-                  Join Class
-                </Button>
+                <Dialog open={showJoinClassroom} onOpenChange={setShowJoinClassroom}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Plus className="w-4 h-4 mr-1" />
+                      Join Class
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Join Classroom</DialogTitle>
+                    </DialogHeader>
+                    <JoinClassroom
+                      onSuccess={() => setShowJoinClassroom(false)}
+                      onCancel={() => setShowJoinClassroom(false)}
+                    />
+                  </DialogContent>
+                </Dialog>
               </div>
             </CardHeader>
             <CardContent>
@@ -211,15 +221,7 @@ export default function StudentDashboard() {
             </CardContent>
           </Card>
 
-          {/* Join Classroom Form */}
-          {showJoinClassroom && (
-            <div className="mb-6">
-              <JoinClassroom
-                onSuccess={() => setShowJoinClassroom(false)}
-                onCancel={() => setShowJoinClassroom(false)}
-              />
-            </div>
-          )}
+
         </div>
 
         {/* Sidebar */}

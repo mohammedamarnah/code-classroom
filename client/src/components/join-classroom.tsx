@@ -2,7 +2,6 @@ import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -55,43 +54,36 @@ export default function JoinClassroom({ onSuccess, onCancel }: JoinClassroomProp
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Join Classroom</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="inviteCode"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Invite Code</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="Enter 6-character invite code" 
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-                      maxLength={6}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="inviteCode"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Invite Code</FormLabel>
+              <FormControl>
+                <Input 
+                  placeholder="Enter 6-character invite code" 
+                  {...field}
+                  onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                  maxLength={6}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-            <div className="flex space-x-3">
-              <Button type="submit" disabled={joinClassroomMutation.isPending}>
-                {joinClassroomMutation.isPending ? "Joining..." : "Join Classroom"}
-              </Button>
-              <Button type="button" variant="outline" onClick={onCancel}>
-                Cancel
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+        <div className="flex space-x-3">
+          <Button type="submit" disabled={joinClassroomMutation.isPending}>
+            {joinClassroomMutation.isPending ? "Joining..." : "Join Classroom"}
+          </Button>
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 }
