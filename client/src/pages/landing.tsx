@@ -20,9 +20,11 @@ export default function Landing() {
                   Sign Up
                 </Button>
               </Link>
-              <Button onClick={() => window.location.href = '/api/login'}>
-                Sign In
-              </Button>
+              <Link href="/signup">
+                <Button variant="ghost">
+                  Sign In
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
