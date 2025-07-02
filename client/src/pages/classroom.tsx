@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const classroomUpdateSchema = z.object({
   name: z.string().min(1, "Classroom name is required"),
@@ -50,18 +50,20 @@ export default function Classroom() {
   const form = useForm<ClassroomUpdateData>({
     resolver: zodResolver(classroomUpdateSchema),
     defaultValues: {
-      name: classroom?.name || "",
-      description: classroom?.description || "",
+      name: "",
+      description: "",
     },
   });
 
-  // Update form default values when classroom data changes
-  if (classroom && (form.getValues().name !== classroom.name || form.getValues().description !== classroom.description)) {
-    form.reset({
-      name: classroom.name,
-      description: classroom.description || "",
-    });
-  }
+  // Update form values when dialog opens and classroom data is available
+  useEffect(() => {
+    if (showEditDialog && classroom) {
+      form.reset({
+        name: classroom.name,
+        description: classroom.description || "",
+      });
+    }
+  }, [showEditDialog, classroom, form]);
 
   const updateClassroomMutation = useMutation({
     mutationFn: async (data: ClassroomUpdateData) => {
