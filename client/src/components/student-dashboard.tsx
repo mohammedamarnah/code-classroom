@@ -20,9 +20,6 @@ import { Link } from "wouter";
 
 export default function StudentDashboard() {
   const { user, isLoading: userLoading } = useAuth();
-  const [selectedClassroom, setSelectedClassroom] = useState<number | null>(
-    null,
-  );
   const [showJoinClassroom, setShowJoinClassroom] = useState(false);
 
   // Show loading state while user data is being fetched
@@ -46,48 +43,6 @@ export default function StudentDashboard() {
     enabled: !!user?.id,
   });
 
-  const { data: problems } = useQuery({
-    queryKey: [`/api/classrooms/${selectedClassroom}/problems`],
-    enabled: !!selectedClassroom,
-  });
-
-  const { data: leaderboard } = useQuery({
-    queryKey: [`/api/classrooms/${selectedClassroom}/leaderboard`],
-    enabled: !!selectedClassroom,
-  });
-
-  const selectedClassroomData =
-    classrooms && Array.isArray(classrooms)
-      ? classrooms.find((c: any) => c.id === selectedClassroom)
-      : null;
-
-  // Auto-select first classroom if none selected
-  if (
-    !selectedClassroom &&
-    classrooms &&
-    Array.isArray(classrooms) &&
-    classrooms.length > 0
-  ) {
-    setSelectedClassroom(classrooms[0].id);
-  }
-
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case "easy":
-        return "bg-secondary text-white";
-      case "medium":
-        return "bg-accent text-white";
-      case "hard":
-        return "bg-red-500 text-white";
-      default:
-        return "bg-neutral-500 text-white";
-    }
-  };
-
-  const userRank =
-    leaderboard && Array.isArray(leaderboard) && user
-      ? leaderboard.findIndex((student: any) => student.id === user?.id) + 1
-      : 0;
   const level = user?.level || 1;
   const currentXP = user?.totalPoints || 0;
   const nextLevelXP = level * 1000;
@@ -191,7 +146,7 @@ export default function StudentDashboard() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-neutral-600">Rank</p>
                 <p className="text-2xl font-bold text-neutral-900">
-                  #{userRank || "-"}
+                  -
                 </p>
               </div>
             </div>
@@ -201,15 +156,13 @@ export default function StudentDashboard() {
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Problems Section */}
+        {/* Classrooms Section */}
         <div className="lg:col-span-2">
-          {/* Classroom Selector */}
+          {/* My Classrooms */}
           <Card className="mb-6">
-            <CardContent className="p-6">
-              <div className="flex justify-between items-center mb-3">
-                <label className="block text-sm font-medium text-neutral-700">
-                  Select Classroom
-                </label>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle>My Classrooms</CardTitle>
                 <Button
                   variant="outline"
                   size="sm"
@@ -219,20 +172,42 @@ export default function StudentDashboard() {
                   Join Class
                 </Button>
               </div>
-              <select
-                className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                value={selectedClassroom || ""}
-                onChange={(e) => setSelectedClassroom(parseInt(e.target.value))}
-              >
-                <option value="">Choose a classroom...</option>
-                {classrooms &&
-                  Array.isArray(classrooms) &&
-                  classrooms.map((classroom: any) => (
-                    <option key={classroom.id} value={classroom.id}>
-                      {classroom.name}
-                    </option>
+            </CardHeader>
+            <CardContent>
+              {classroomsLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                  <p className="text-neutral-600">Loading classrooms...</p>
+                </div>
+              ) : !classrooms || classrooms.length === 0 ? (
+                <div className="text-center py-8 text-neutral-500">
+                  No classrooms joined yet. Join your first classroom to get started!
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {classrooms.map((classroom: any) => (
+                    <Link key={classroom.id} href={`/classroom/${classroom.id}`}>
+                      <div className="border border-neutral-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer hover:border-primary/20">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="font-semibold text-neutral-900 mb-1">{classroom.name}</h4>
+                            <p className="text-sm text-neutral-600 mb-2">{classroom.description}</p>
+                            <div className="flex items-center space-x-4 text-sm text-neutral-500">
+                              <span>
+                                <Users className="w-4 h-4 inline mr-1" />
+                                Teacher: {classroom.teacher?.firstName || classroom.teacher?.email || 'Unknown'}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-sm text-primary font-medium">View Classroom →</div>
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
                   ))}
-              </select>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -245,145 +220,10 @@ export default function StudentDashboard() {
               />
             </div>
           )}
-
-          {/* Available Problems */}
-          {selectedClassroom && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Available Problems</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {problems &&
-                Array.isArray(problems) &&
-                problems.length === 0 ? (
-                  <div className="text-center py-8 text-neutral-500">
-                    No problems available yet.
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {problems &&
-                      Array.isArray(problems) &&
-                      problems.map((problem: any) => (
-                        <div
-                          key={problem.id}
-                          className="border border-neutral-200 rounded-lg p-4 hover:shadow-md transition-shadow"
-                        >
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                              <div className="flex items-center space-x-3 mb-2">
-                                <h4 className="font-semibold text-neutral-900">
-                                  {problem.title}
-                                </h4>
-                                <Badge
-                                  className={getDifficultyColor(
-                                    problem.difficulty,
-                                  )}
-                                >
-                                  {problem.difficulty}
-                                </Badge>
-                                <span className="text-sm text-accent font-medium">
-                                  {problem.points} pts
-                                </span>
-                              </div>
-                              <p className="text-sm text-neutral-600 mb-3">
-                                {problem.description}
-                              </p>
-                              <div className="flex items-center space-x-4 text-xs text-neutral-500">
-                                <span>
-                                  <Clock className="w-3 h-3 inline mr-1" />
-                                  {problem.timeLimit} seconds
-                                </span>
-                              </div>
-                            </div>
-                            <Link href={`/problem/${problem.id}`}>
-                              <Button className="ml-4">Solve</Button>
-                            </Link>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
         </div>
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* Leaderboard */}
-          {selectedClassroom && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Class Leaderboard</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {leaderboard &&
-                Array.isArray(leaderboard) &&
-                leaderboard.length === 0 ? (
-                  <div className="text-center py-4 text-neutral-500">
-                    No students enrolled yet.
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {leaderboard &&
-                      Array.isArray(leaderboard) &&
-                      leaderboard
-                        .slice(0, 5)
-                        .map((student: any, index: number) => (
-                          <div
-                            key={student.id}
-                            className={`flex items-center space-x-3 p-3 rounded-lg ${
-                              student.id === user?.id
-                                ? "bg-gradient-to-r from-accent to-orange-600 text-white"
-                                : "bg-neutral-50"
-                            }`}
-                          >
-                            <div
-                              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                                student.id === user?.id
-                                  ? "bg-white bg-opacity-20"
-                                  : index === 0
-                                    ? "bg-accent text-white"
-                                    : index === 1
-                                      ? "bg-neutral-400 text-white"
-                                      : index === 2
-                                        ? "bg-orange-400 text-white"
-                                        : "bg-neutral-300 text-neutral-700"
-                              }`}
-                            >
-                              {index + 1}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p
-                                className={`text-sm font-medium truncate ${
-                                  student.id === user?.id
-                                    ? "text-white"
-                                    : "text-neutral-900"
-                                }`}
-                              >
-                                {student.firstName && student.lastName
-                                  ? `${student.firstName} ${student.lastName}`
-                                  : student.firstName || student.email}{" "}
-                                {student.id === user?.id && "(You)"}
-                              </p>
-                              <p
-                                className={`text-xs ${
-                                  student.id === user?.id
-                                    ? "text-white opacity-75"
-                                    : "text-neutral-500"
-                                }`}
-                              >
-                                {student.totalPoints} points
-                              </p>
-                            </div>
-                            {index === 0 && <Crown className="w-4 h-4" />}
-                          </div>
-                        ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
 
           {/* Achievements */}
           <Card>

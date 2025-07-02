@@ -115,30 +115,25 @@ export default function TeacherDashboard() {
               ) : (
                 <div className="space-y-4">
                   {classrooms?.map((classroom: any) => (
-                    <div key={classroom.id} className="border border-neutral-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h4 className="font-semibold text-neutral-900 mb-1">{classroom.name}</h4>
-                          <p className="text-sm text-neutral-600 mb-2">{classroom.description}</p>
-                          <div className="flex items-center space-x-4 text-sm text-neutral-500">
-                            <span>
-                              <Users className="w-4 h-4 inline mr-1" />
-                              Invite Code: {classroom.inviteCode}
-                            </span>
+                    <Link key={classroom.id} href={`/classroom/${classroom.id}`}>
+                      <div className="border border-neutral-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer hover:border-primary/20">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="font-semibold text-neutral-900 mb-1">{classroom.name}</h4>
+                            <p className="text-sm text-neutral-600 mb-2">{classroom.description}</p>
+                            <div className="flex items-center space-x-4 text-sm text-neutral-500">
+                              <span>
+                                <Users className="w-4 h-4 inline mr-1" />
+                                Invite Code: {classroom.inviteCode}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-sm text-primary font-medium">Manage Classroom →</div>
                           </div>
                         </div>
-                        <div className="flex space-x-2">
-                          <Button variant="ghost" size="sm">
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Link href={`/classroom/${classroom.id}`}>
-                            <Button variant="ghost" size="sm">
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                          </Link>
-                        </div>
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               )}
