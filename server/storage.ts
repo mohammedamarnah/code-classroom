@@ -27,6 +27,7 @@ export interface IStorage {
   createEmailUser(email: string, firstName: string, hashedPassword: string): Promise<User>;
   updateUserPoints(userId: string, points: number): Promise<void>;
   updateUserLevel(userId: string, level: number): Promise<void>;
+  updateUserTestStatus(userId: string, isTestUser: boolean): Promise<void>;
   
   // Classroom operations
   createClassroom(classroom: InsertClassroom & { teacherId: string }): Promise<Classroom>;
@@ -126,6 +127,13 @@ export class DatabaseStorage implements IStorage {
     await db
       .update(users)
       .set({ level, updatedAt: new Date() })
+      .where(eq(users.id, userId));
+  }
+
+  async updateUserTestStatus(userId: string, isTestUser: boolean): Promise<void> {
+    await db
+      .update(users)
+      .set({ testUser: isTestUser, updatedAt: new Date() })
       .where(eq(users.id, userId));
   }
 
@@ -308,10 +316,13 @@ export class DatabaseStorage implements IStorage {
         firstName: users.firstName,
         lastName: users.lastName,
         profileImageUrl: users.profileImageUrl,
+        password: users.password,
+        authType: users.authType,
         role: users.role,
         level: users.level,
         totalPoints: users.totalPoints,
         currentStreak: users.currentStreak,
+        testUser: users.testUser,
         createdAt: users.createdAt,
         updatedAt: users.updatedAt,
         problemsSolved: count(submissions.id),
@@ -322,7 +333,10 @@ export class DatabaseStorage implements IStorage {
         eq(submissions.studentId, users.id),
         eq(submissions.status, 'passed')
       ))
-      .where(eq(classroomEnrollments.classroomId, classroomId))
+      .where(and(
+        eq(classroomEnrollments.classroomId, classroomId),
+        eq(users.testUser, false)
+      ))
       .groupBy(users.id)
       .orderBy(desc(users.totalPoints));
     

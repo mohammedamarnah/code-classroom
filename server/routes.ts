@@ -457,6 +457,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User management routes
+  app.patch('/api/users/:id/test-status', requireAuth, async (req: any, res) => {
+    try {
+      const currentUserId = req.currentUserId;
+      const targetUserId = req.params.id;
+      const { isTestUser } = req.body;
+      
+      const currentUser = await storage.getUser(currentUserId);
+      
+      // Only teachers can modify test user status
+      if (currentUser?.role !== 'teacher') {
+        return res.status(403).json({ message: "Only teachers can modify test user status" });
+      }
+
+      // Validate that isTestUser is a boolean
+      if (typeof isTestUser !== 'boolean') {
+        return res.status(400).json({ message: "isTestUser must be a boolean" });
+      }
+
+      await storage.updateUserTestStatus(targetUserId, isTestUser);
+      res.json({ message: "Test user status updated successfully" });
+    } catch (error) {
+      console.error("Error updating test user status:", error);
+      res.status(500).json({ message: "Failed to update test user status" });
+    }
+  });
+
   app.get('/api/achievements/:userId', requireAuth, async (req: any, res) => {
     try {
       const userId = req.params.userId;

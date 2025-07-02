@@ -37,6 +37,7 @@ export const users = pgTable("users", {
   level: integer("level").notNull().default(1),
   totalPoints: integer("total_points").notNull().default(0),
   currentStreak: integer("current_streak").notNull().default(0),
+  testUser: boolean("test_user").notNull().default(false), // Exclude from leaderboards when true
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

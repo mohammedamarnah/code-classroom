@@ -133,6 +133,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- July 2, 2025 (9:08 PM): Added test user functionality to exclude users from leaderboards
+  - Added `test_user` boolean column to users table with default value false
+  - Updated leaderboard queries to filter out test users
+  - Created API endpoint PATCH `/api/users/:id/test-status` for teachers to toggle test status
+  - Added storage method `updateUserTestStatus` for database operations
+  - Test users can still participate in classrooms but won't appear on leaderboards
+
 - July 2, 2025 (8:35 PM): Implemented one-time point earning system for problem solving
   - Added functionality to prevent users from earning points multiple times for the same problem
   - Users can still submit solutions for practice after earning points once
