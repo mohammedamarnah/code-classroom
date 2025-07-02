@@ -26,7 +26,7 @@ export async function executeJavaCode(code: string, testCases: TestCase[]): Prom
     await fs.mkdir(tempDir, { recursive: true });
 
     // Create the Java file with proper class name
-    const javaCode = code.replace(/public\s+class\s+\w+/, `public class ${className}`);
+    const javaCode = code.replace(/public\s+class\s+\w+(\s*{)/, `public class ${className}$1`);
     await fs.writeFile(filePath, javaCode);
 
     // Compile the Java file
