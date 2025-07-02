@@ -25,9 +25,14 @@ export async function executeJavaCode(code: string, testCases: TestCase[]): Prom
     // Ensure temp directory exists
     await fs.mkdir(tempDir, { recursive: true });
 
+    const imports = `
+      import java.util.Scanner;
+      \n
+    `
+
     // Create the Java file with proper class name
     const javaCode = code.replace(/public\s+class\s+\w+(\s*{)/, `public class ${className}$1`);
-    await fs.writeFile(filePath, javaCode);
+    await fs.writeFile(filePath, imports+javaCode);
 
     // Compile the Java file
     const compileResult = await runCommand('javac', [filePath], tempDir);

@@ -133,6 +133,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- July 2, 2025 (10:10 PM): Added classroom editing and deletion functionality for teachers
+  - Teachers can now edit classroom names and descriptions through a modal dialog
+  - Teachers can delete entire classrooms with cascading deletion of all related data
+  - Added proper permission checks ensuring only classroom creators can edit/delete
+  - Implemented confirmation dialogs for destructive actions
+  - Fixed form reset issues that prevented editing in modal dialogs
+
 - July 2, 2025 (9:08 PM): Added test user functionality to exclude users from leaderboards
   - Added `test_user` boolean column to users table with default value false
   - Updated leaderboard queries to filter out test users
