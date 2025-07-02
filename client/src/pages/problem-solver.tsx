@@ -173,7 +173,9 @@ export default function ProblemSolver() {
                 <div className="mt-6">
                   <h4 className="font-medium text-neutral-900 mb-3">Example:</h4>
                   <div className="bg-neutral-100 p-3 rounded text-sm font-mono">
-                    <div><strong>Input:</strong> {(problem.testCases as any[])[0]?.input}</div>
+                    {(problem.testCases as any[])[0]?.input && (
+                      <div><strong>Input:</strong> {(problem.testCases as any[])[0]?.input}</div>
+                    )}
                     <div><strong>Output:</strong> {(problem.testCases as any[])[0]?.expectedOutput}</div>
                   </div>
                 </div>

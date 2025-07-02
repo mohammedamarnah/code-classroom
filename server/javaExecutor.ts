@@ -48,16 +48,16 @@ export async function executeJavaCode(code: string, testCases: TestCase[]): Prom
     for (let i = 0; i < testCases.length; i++) {
       const testCase = testCases[i];
       
-      // Create input file for this test case
+      // Create input file for this test case if input is provided
       const inputFile = path.join(tempDir, `input_${i}.txt`);
-      await fs.writeFile(inputFile, testCase.input);
+      await fs.writeFile(inputFile, testCase.input || '');
 
-      // Execute the Java program with input
+      // Execute the Java program with input (empty string if no input)
       const executeResult = await runCommand(
         'java',
         ['-cp', tempDir, className],
         tempDir,
-        testCase.input,
+        testCase.input || '',
         5000 // 5 second timeout
       );
 

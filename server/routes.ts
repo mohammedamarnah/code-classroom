@@ -303,6 +303,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete('/api/problems/:id', requireAuth, async (req: any, res) => {
+    try {
+      const problemId = parseInt(req.params.id);
+      const userId = req.currentUserId;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'teacher') {
+        return res.status(403).json({ message: "Only teachers can delete problems" });
+      }
+
+      const problem = await storage.getProblem(problemId);
+      if (!problem) {
+        return res.status(404).json({ message: "Problem not found" });
+      }
+
+      // Check if the teacher created this problem
+      if (problem.createdBy !== userId) {
+        return res.status(403).json({ message: "You can only delete problems you created" });
+      }
+
+      await storage.deleteProblem(problemId);
+      res.json({ message: "Problem deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting problem:", error);
+      res.status(500).json({ message: "Failed to delete problem" });
+    }
+  });
+
   // Test problem route
   app.post('/api/problems/:id/test', async (req: any, res) => {
     try {

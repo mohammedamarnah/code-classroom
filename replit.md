@@ -133,6 +133,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- July 2, 2025 (8:30 PM): Added optional test case inputs and problem deletion functionality
+  - Modified problem creation form to allow optional inputs for test cases
+  - Updated Java code executor to handle empty inputs properly
+  - Added problem deletion API endpoint with proper authorization checks
+  - Implemented delete buttons in classroom view for teachers who created problems
+  - Added confirmation dialogs and error handling for delete operations
+  - Updated problem display to conditionally show input examples only when provided
+
 - July 2, 2025 (8:18 PM): Added email signup and authentication system
   - Added password and authType fields to user database schema
   - Created email signup API routes (/api/auth/signup, /api/auth/login, /api/auth/logout)

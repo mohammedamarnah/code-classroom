@@ -1,14 +1,19 @@
 import { useParams } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Clock, Trophy, Users } from "lucide-react";
+import { ArrowLeft, Clock, Trophy, Users, Trash2 } from "lucide-react";
 import { Link } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Classroom() {
   const { id } = useParams();
   const classroomId = parseInt(id!);
+  const { user } = useAuth();
+  const { toast } = useToast();
 
   const { data: classroom, isLoading: classroomLoading } = useQuery({
     queryKey: [`/api/classrooms/${classroomId}`],
@@ -21,6 +26,33 @@ export default function Classroom() {
   const { data: leaderboard } = useQuery({
     queryKey: [`/api/classrooms/${classroomId}/leaderboard`],
   });
+
+  const deleteProblemMutation = useMutation({
+    mutationFn: async (problemId: number) => {
+      const response = await apiRequest('DELETE', `/api/problems/${problemId}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Problem deleted successfully!",
+      });
+      queryClient.invalidateQueries({ queryKey: [`/api/classrooms/${classroomId}/problems`] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDeleteProblem = async (problemId: number, problemTitle: string) => {
+    if (window.confirm(`Are you sure you want to delete "${problemTitle}"? This action cannot be undone.`)) {
+      deleteProblemMutation.mutate(problemId);
+    }
+  };
 
   if (classroomLoading || problemsLoading) {
     return (
@@ -92,11 +124,24 @@ export default function Classroom() {
                               </span>
                             </div>
                           </div>
-                          <Link href={`/problem/${problem.id}`}>
-                            <Button className="ml-4">
-                              Solve
-                            </Button>
-                          </Link>
+                          <div className="flex items-center space-x-2 ml-4">
+                            <Link href={`/problem/${problem.id}`}>
+                              <Button>
+                                Solve
+                              </Button>
+                            </Link>
+                            {user?.role === 'teacher' && user?.id === problem.createdBy && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeleteProblem(problem.id, problem.title)}
+                                disabled={deleteProblemMutation.isPending}
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))}

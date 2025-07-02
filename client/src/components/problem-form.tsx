@@ -88,10 +88,10 @@ export default function ProblemForm({ classrooms, onSuccess, onCancel }: Problem
   };
 
   const onSubmit = (data: any) => {
-    if (testCases.length === 0 || testCases.some(tc => !tc.input.trim() || !tc.expectedOutput.trim())) {
+    if (testCases.length === 0 || testCases.some(tc => !tc.expectedOutput.trim())) {
       toast({
         title: "Invalid Test Cases",
-        description: "Please provide at least one complete test case.",
+        description: "Please provide at least one test case with expected output.",
         variant: "destructive",
       });
       return;
@@ -275,10 +275,10 @@ export default function ProblemForm({ classrooms, onSuccess, onCancel }: Problem
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-medium text-neutral-600 mb-1">Input</label>
+                        <label className="block text-xs font-medium text-neutral-600 mb-1">Input (Optional)</label>
                         <Textarea
                           rows={2}
-                          placeholder="Input for this test case"
+                          placeholder="Input for this test case (leave empty if no input needed)"
                           value={testCase.input}
                           onChange={(e) => updateTestCase(index, 'input', e.target.value)}
                         />

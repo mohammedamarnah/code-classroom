@@ -44,6 +44,7 @@ export interface IStorage {
   createProblem(problem: InsertProblem & { createdBy: string }): Promise<Problem>;
   getProblem(id: number): Promise<Problem | undefined>;
   getClassroomProblems(classroomId: number): Promise<Problem[]>;
+  deleteProblem(id: number): Promise<void>;
   
   // Submission operations
   createSubmission(submission: InsertSubmission & { studentId: string; status: string; pointsEarned: number; executionTime?: number; output?: string; error?: string }): Promise<Submission>;
@@ -206,6 +207,13 @@ export class DatabaseStorage implements IStorage {
 
   async getClassroomProblems(classroomId: number): Promise<Problem[]> {
     return await db.select().from(problems).where(eq(problems.classroomId, classroomId)).orderBy(desc(problems.createdAt));
+  }
+
+  async deleteProblem(id: number): Promise<void> {
+    // First delete all submissions related to this problem
+    await db.delete(submissions).where(eq(submissions.problemId, id));
+    // Then delete the problem itself
+    await db.delete(problems).where(eq(problems.id, id));
   }
 
   async createSubmission(submission: InsertSubmission & { studentId: string; status: string; pointsEarned: number; executionTime?: number; output?: string; error?: string }): Promise<Submission> {
