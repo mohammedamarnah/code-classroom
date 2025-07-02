@@ -13,6 +13,6 @@ export function useAuth() {
   return {
     user,
     isLoading,
-    isAuthenticated: !!user && !isUnauthorizedError(error as Error),
+    isAuthenticated: !!user && !isUnauthorizedError(error),
   };
 }

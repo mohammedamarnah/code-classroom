@@ -1,0 +1,22 @@
+Cannot read properties of null (reading 'message')
+The above error occurred in the <Router> component:
+
+    at Router (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/src/App.tsx?v=5TsRFRC3i809HKqSiY58W:32:42)
+    at Provider (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-66S4TGQY.js?v=1c80bd03:42:15)
+    at TooltipProvider (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=1c80bd03:52:5)
+    at QueryClientProvider (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=1c80bd03:2805:3)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+Cannot read properties of null (reading 'message')
+at isUnauthorizedError (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/src/lib/authUtils.ts:2:44)
+at useAuth (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/src/hooks/useAuth.ts:15:33)
+at Router (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/src/App.tsx?v=5TsRFRC3i809HKqSiY58W:32:42)
+at renderWithHooks (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=1c80bd03:11548:26)
+at updateFunctionComponent (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=1c80bd03:14582:28)
+at beginWork (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=1c80bd03:15924:22)
+at beginWork$1 (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=1c80bd03:19753:22)
+at performUnitOfWork (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=1c80bd03:19198:20)
+at workLoopSync (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=1c80bd03:19137:13)
+at renderRootSync (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=1c80bd03:19116:15)

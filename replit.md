@@ -133,6 +133,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- July 2, 2025 (8:18 PM): Added email signup and authentication system
+  - Added password and authType fields to user database schema
+  - Created email signup API routes (/api/auth/signup, /api/auth/login, /api/auth/logout)
+  - Built comprehensive auth page with form validation and mode switching
+  - Updated landing page with signup/signin options
+  - Added combined authentication supporting both OAuth and email
+  - Fixed authentication polling issues and form editability problems
+  - Fixed error handling for null authentication errors
+
 - June 30, 2025 (11:42 PM): Fixed syntax highlighting in code editor
   - Replaced basic textarea with CodeMirror editor in problem solver page
   - Added Java syntax highlighting with proper language extensions
