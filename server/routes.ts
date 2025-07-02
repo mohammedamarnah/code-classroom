@@ -3,30 +3,158 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertClassroomSchema, insertProblemSchema, insertSubmissionSchema, insertEnrollmentSchema } from "@shared/schema";
+
+// Combined authentication middleware
+const requireAuth = async (req: any, res: any, next: any) => {
+  try {
+    // Check OAuth authentication
+    if (req.isAuthenticated() && req.user.claims?.sub) {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      if (user) {
+        req.currentUser = user;
+        req.currentUserId = userId;
+        return next();
+      }
+    }
+    
+    // Check email/password authentication
+    if (req.session.userId) {
+      const user = await storage.getUser(req.session.userId);
+      if (user) {
+        req.currentUser = user;
+        req.currentUserId = req.session.userId;
+        return next();
+      }
+    }
+    
+    return res.status(401).json({ message: "Unauthorized" });
+  } catch (error) {
+    console.error("Authentication error:", error);
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+};
+import { insertClassroomSchema, insertProblemSchema, insertSubmissionSchema, insertEnrollmentSchema, emailSignupSchema } from "@shared/schema";
 import { executeJavaCode } from "./javaExecutor";
+import bcrypt from "bcrypt";
+import session from "express-session";
+
+declare module 'express-session' {
+  interface SessionData {
+    userId: string;
+  }
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
   // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  app.get('/api/auth/user', async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
+      if (req.isAuthenticated()) {
+        // OAuth user
+        const userId = req.user.claims?.sub;
+        if (userId) {
+          const user = await storage.getUser(userId);
+          return res.json(user);
+        }
+      }
+      
+      // Email/password user
+      if (req.session.userId) {
+        const user = await storage.getUser(req.session.userId);
+        return res.json(user);
+      }
+      
+      res.status(401).json({ message: "Unauthorized" });
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
     }
   });
 
-  // Classroom routes
-  app.post('/api/classrooms', isAuthenticated, async (req: any, res) => {
+  // Email signup route
+  app.post('/api/auth/signup', async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
+      const userData = emailSignupSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(userData.email);
+      if (existingUser) {
+        return res.status(400).json({ message: "User with this email already exists" });
+      }
+      
+      // Hash password
+      const hashedPassword = await bcrypt.hash(userData.password, 10);
+      
+      // Create user
+      const user = await storage.createEmailUser(userData.email, userData.firstName, hashedPassword);
+      
+      // Set session
+      req.session.userId = user.id;
+      
+      res.status(201).json(user);
+    } catch (error) {
+      console.error("Error during signup:", error);
+      res.status(500).json({ message: "Failed to create account" });
+    }
+  });
+
+  // Email login route
+  app.post('/api/auth/login', async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required" });
+      }
+      
+      // Find user by email
+      const user = await storage.getUserByEmail(email);
+      if (!user || user.authType !== 'email' || !user.password) {
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+      
+      // Verify password
+      const isValidPassword = await bcrypt.compare(password, user.password);
+      if (!isValidPassword) {
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+      
+      // Set session
+      req.session.userId = user.id;
+      
+      res.json(user);
+    } catch (error) {
+      console.error("Error during login:", error);
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  // Logout route (works for both OAuth and email auth)
+  app.post('/api/auth/logout', (req, res) => {
+    if (req.session.userId) {
+      req.session.destroy((err) => {
+        if (err) {
+          return res.status(500).json({ message: "Failed to logout" });
+        }
+        res.json({ message: "Logged out successfully" });
+      });
+    } else if (req.isAuthenticated()) {
+      req.logout(() => {
+        res.json({ message: "Logged out successfully" });
+      });
+    } else {
+      res.json({ message: "Not logged in" });
+    }
+  });
+
+  // Classroom routes
+  app.post('/api/classrooms', requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.currentUserId;
+      const user = req.currentUser;
       
       if (user?.role !== 'teacher') {
         return res.status(403).json({ message: "Only teachers can create classrooms" });
@@ -45,10 +173,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/classrooms', isAuthenticated, async (req: any, res) => {
+  app.get('/api/classrooms', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
+      const userId = req.currentUserId;
+      const user = req.currentUser;
       
       let classrooms;
       if (user?.role === 'teacher') {

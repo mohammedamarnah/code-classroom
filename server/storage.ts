@@ -22,7 +22,9 @@ import { eq, desc, and, sql, count } from "drizzle-orm";
 export interface IStorage {
   // User operations
   getUser(id: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  createEmailUser(email: string, firstName: string, hashedPassword: string): Promise<User>;
   updateUserPoints(userId: string, points: number): Promise<void>;
   updateUserLevel(userId: string, level: number): Promise<void>;
   
@@ -69,6 +71,27 @@ export interface IStorage {
 export class DatabaseStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async createEmailUser(email: string, firstName: string, hashedPassword: string): Promise<User> {
+    const userId = `email_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    const [user] = await db
+      .insert(users)
+      .values({
+        id: userId,
+        email,
+        firstName,
+        password: hashedPassword,
+        authType: 'email',
+        role: 'student',
+      })
+      .returning();
     return user;
   }
 

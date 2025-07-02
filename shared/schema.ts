@@ -24,13 +24,15 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// User storage table for Replit Auth
+// User storage table for Replit Auth and Email/Password Auth
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().notNull(),
   email: varchar("email").unique(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
+  password: varchar("password"), // For email/password auth, null for OAuth users
+  authType: varchar("auth_type").notNull().default("oauth"), // 'oauth' or 'email'
   role: varchar("role").notNull().default("student"), // 'teacher' or 'student'
   level: integer("level").notNull().default(1),
   totalPoints: integer("total_points").notNull().default(0),
@@ -153,6 +155,15 @@ export const achievementsRelations = relations(achievements, ({ one }) => ({
 
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users);
+export const emailSignupSchema = createInsertSchema(users).pick({ 
+  firstName: true, 
+  email: true, 
+  password: true 
+}).extend({
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  email: z.string().email("Invalid email address"),
+  firstName: z.string().min(1, "Name is required"),
+});
 export const insertClassroomSchema = createInsertSchema(classrooms).omit({ id: true, inviteCode: true, createdAt: true, teacherId: true });
 export const insertProblemSchema = createInsertSchema(problems).omit({ id: true, createdAt: true, createdBy: true });
 export const insertSubmissionSchema = createInsertSchema(submissions).omit({ id: true, submittedAt: true, studentId: true, status: true, pointsEarned: true, executionTime: true, output: true, error: true });
@@ -161,6 +172,7 @@ export const insertEnrollmentSchema = createInsertSchema(classroomEnrollments).o
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
+export type EmailSignup = z.infer<typeof emailSignupSchema>;
 export type Classroom = typeof classrooms.$inferSelect;
 export type InsertClassroom = z.infer<typeof insertClassroomSchema>;
 export type Problem = typeof problems.$inferSelect;

@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Code, Users, Trophy, BookOpen } from "lucide-react";
+import { Link } from "wouter";
 
 export default function Landing() {
   return (
@@ -13,9 +14,16 @@ export default function Landing() {
               <Code className="text-primary text-2xl mr-3" />
               <h1 className="text-xl font-bold text-neutral-900">CodeClassroom</h1>
             </div>
-            <Button onClick={() => window.location.href = '/api/login'}>
-              Sign In
-            </Button>
+            <div className="flex items-center space-x-2">
+              <Link href="/signup">
+                <Button variant="outline">
+                  Sign Up
+                </Button>
+              </Link>
+              <Button onClick={() => window.location.href = '/api/login'}>
+                Sign In
+              </Button>
+            </div>
           </div>
         </div>
       </nav>
@@ -31,13 +39,21 @@ export default function Landing() {
             A comprehensive Java programming education platform with classroom management, 
             auto-grading, and gamified student progress tracking.
           </p>
-          <Button 
-            size="lg" 
-            className="text-lg px-8 py-3"
-            onClick={() => window.location.href = '/api/login'}
-          >
-            Get Started Free
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/signup">
+              <Button size="lg" className="text-lg px-8 py-3">
+                Get Started Free
+              </Button>
+            </Link>
+            <Button 
+              size="lg" 
+              variant="outline"
+              className="text-lg px-8 py-3"
+              onClick={() => window.location.href = '/api/login'}
+            >
+              Sign in with Replit
+            </Button>
+          </div>
         </div>
       </div>
 
