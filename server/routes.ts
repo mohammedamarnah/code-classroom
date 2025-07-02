@@ -192,9 +192,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/classrooms/join', isAuthenticated, async (req: any, res) => {
+  app.post('/api/classrooms/join', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.currentUserId;
       const { inviteCode } = req.body;
       
       const classroom = await storage.getClassroomByInviteCode(inviteCode);
@@ -215,7 +215,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/classrooms/:id', isAuthenticated, async (req: any, res) => {
+  app.get('/api/classrooms/:id', requireAuth, async (req: any, res) => {
     try {
       const classroomId = parseInt(req.params.id);
       const classroom = await storage.getClassroom(classroomId);
@@ -231,7 +231,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/classrooms/:id/students', isAuthenticated, async (req: any, res) => {
+  app.get('/api/classrooms/:id/students', requireAuth, async (req: any, res) => {
     try {
       const classroomId = parseInt(req.params.id);
       const students = await storage.getClassroomStudents(classroomId);
@@ -242,7 +242,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/classrooms/:id/leaderboard', isAuthenticated, async (req: any, res) => {
+  app.get('/api/classrooms/:id/leaderboard', requireAuth, async (req: any, res) => {
     try {
       const classroomId = parseInt(req.params.id);
       const leaderboard = await storage.getClassroomLeaderboard(classroomId);
@@ -254,9 +254,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Problem routes
-  app.post('/api/problems', isAuthenticated, async (req: any, res) => {
+  app.post('/api/problems', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.currentUserId;
       const user = await storage.getUser(userId);
       
       if (user?.role !== 'teacher') {
@@ -276,7 +276,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/classrooms/:id/problems', isAuthenticated, async (req: any, res) => {
+  app.get('/api/classrooms/:id/problems', requireAuth, async (req: any, res) => {
     try {
       const classroomId = parseInt(req.params.id);
       const problems = await storage.getClassroomProblems(classroomId);
@@ -287,7 +287,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/problems/:id', isAuthenticated, async (req: any, res) => {
+  app.get('/api/problems/:id', requireAuth, async (req: any, res) => {
     try {
       const problemId = parseInt(req.params.id);
       const problem = await storage.getProblem(problemId);
@@ -330,9 +330,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Submission routes
-  app.post('/api/submissions', isAuthenticated, async (req: any, res) => {
+  app.post('/api/submissions', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.currentUserId;
       const submissionData = insertSubmissionSchema.parse(req.body);
       
       const problem = await storage.getProblem(submissionData.problemId);
@@ -376,7 +376,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/problems/:id/submissions', isAuthenticated, async (req: any, res) => {
+  app.get('/api/problems/:id/submissions', requireAuth, async (req: any, res) => {
     try {
       const problemId = parseInt(req.params.id);
       const submissions = await storage.getProblemSubmissions(problemId);
@@ -387,7 +387,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/submissions/recent', isAuthenticated, async (req: any, res) => {
+  app.get('/api/submissions/recent', requireAuth, async (req: any, res) => {
     try {
       const limit = parseInt(req.query.limit as string) || 10;
       const submissions = await storage.getRecentSubmissions(limit);
@@ -399,9 +399,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Stats routes
-  app.get('/api/stats/teacher', isAuthenticated, async (req: any, res) => {
+  app.get('/api/stats/teacher', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.currentUserId;
       const user = await storage.getUser(userId);
       
       if (user?.role !== 'teacher') {
@@ -416,7 +416,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/achievements/:userId', isAuthenticated, async (req: any, res) => {
+  app.get('/api/achievements/:userId', requireAuth, async (req: any, res) => {
     try {
       const userId = req.params.userId;
       const achievements = await storage.getUserAchievements(userId);
