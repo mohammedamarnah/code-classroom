@@ -38,13 +38,13 @@ export default function Leaderboard({ classroomId, currentUserId }: LeaderboardP
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {leaderboard?.length === 0 ? (
+        {!Array.isArray(leaderboard) || leaderboard.length === 0 ? (
           <div className="text-center py-4 text-neutral-500">
             No students enrolled yet.
           </div>
         ) : (
           <div className="space-y-3">
-            {leaderboard?.slice(0, 10).map((student: any, index: number) => (
+            {leaderboard.slice(0, 10).map((student: any, index: number) => (
               <div 
                 key={student.id} 
                 className={`flex items-center space-x-3 p-3 rounded-lg ${
@@ -66,7 +66,10 @@ export default function Leaderboard({ classroomId, currentUserId }: LeaderboardP
                   <p className={`text-sm font-medium truncate ${
                     student.id === currentUserId ? 'text-white' : 'text-neutral-900'
                   }`}>
-                    {student.firstName || student.email} 
+                    {student.firstName && student.lastName 
+                      ? `${student.firstName} ${student.lastName}` 
+                      : student.firstName || student.email
+                    } 
                     {student.id === currentUserId && ' (You)'}
                   </p>
                   <div className={`text-xs ${

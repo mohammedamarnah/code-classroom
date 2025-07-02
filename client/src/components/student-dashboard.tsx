@@ -284,7 +284,10 @@ export default function StudentDashboard() {
                           <p className={`text-sm font-medium truncate ${
                             student.id === user?.id ? 'text-white' : 'text-neutral-900'
                           }`}>
-                            {student.firstName || student.email} {student.id === user?.id && '(You)'}
+                            {student.firstName && student.lastName 
+                              ? `${student.firstName} ${student.lastName}` 
+                              : student.firstName || student.email
+                            } {student.id === user?.id && '(You)'}
                           </p>
                           <p className={`text-xs ${
                             student.id === user?.id ? 'text-white opacity-75' : 'text-neutral-500'
