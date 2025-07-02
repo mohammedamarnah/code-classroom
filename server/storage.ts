@@ -35,6 +35,8 @@ export interface IStorage {
   getClassroomsByTeacher(teacherId: string): Promise<Classroom[]>;
   getClassroomsByStudent(studentId: string): Promise<(Classroom & { teacher: User })[]>;
   getClassroomByInviteCode(inviteCode: string): Promise<Classroom | undefined>;
+  updateClassroom(id: number, updates: Partial<InsertClassroom>): Promise<Classroom>;
+  deleteClassroom(id: number): Promise<void>;
   
   // Enrollment operations
   enrollStudent(classroomId: number, studentId: string): Promise<void>;
@@ -177,6 +179,33 @@ export class DatabaseStorage implements IStorage {
   async getClassroomByInviteCode(inviteCode: string): Promise<Classroom | undefined> {
     const [classroom] = await db.select().from(classrooms).where(eq(classrooms.inviteCode, inviteCode));
     return classroom;
+  }
+
+  async updateClassroom(id: number, updates: Partial<InsertClassroom>): Promise<Classroom> {
+    const [updatedClassroom] = await db.update(classrooms)
+      .set(updates)
+      .where(eq(classrooms.id, id))
+      .returning();
+    return updatedClassroom;
+  }
+
+  async deleteClassroom(id: number): Promise<void> {
+    // First delete all enrollments for this classroom
+    await db.delete(classroomEnrollments).where(eq(classroomEnrollments.classroomId, id));
+    
+    // Get all problems in this classroom to delete their submissions
+    const classroomProblems = await db.select().from(problems).where(eq(problems.classroomId, id));
+    
+    // Delete all submissions for problems in this classroom
+    for (const problem of classroomProblems) {
+      await db.delete(submissions).where(eq(submissions.problemId, problem.id));
+    }
+    
+    // Delete all problems in this classroom
+    await db.delete(problems).where(eq(problems.classroomId, id));
+    
+    // Finally delete the classroom itself
+    await db.delete(classrooms).where(eq(classrooms.id, id));
   }
 
   async enrollStudent(classroomId: number, studentId: string): Promise<void> {

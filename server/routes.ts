@@ -253,6 +253,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch('/api/classrooms/:id', requireAuth, async (req: any, res) => {
+    try {
+      const classroomId = parseInt(req.params.id);
+      const userId = req.currentUserId;
+      const user = req.currentUser;
+
+      // Check if classroom exists
+      const classroom = await storage.getClassroom(classroomId);
+      if (!classroom) {
+        return res.status(404).json({ message: "Classroom not found" });
+      }
+
+      // Check if user is the teacher of this classroom
+      if (user?.role !== 'teacher' || classroom.teacherId !== userId) {
+        return res.status(403).json({ message: "Only the classroom teacher can update this classroom" });
+      }
+
+      // Validate request body
+      const updateData = insertClassroomSchema.partial().parse(req.body);
+      
+      const updatedClassroom = await storage.updateClassroom(classroomId, updateData);
+      res.json(updatedClassroom);
+    } catch (error) {
+      console.error("Error updating classroom:", error);
+      res.status(500).json({ message: "Failed to update classroom" });
+    }
+  });
+
+  app.delete('/api/classrooms/:id', requireAuth, async (req: any, res) => {
+    try {
+      const classroomId = parseInt(req.params.id);
+      const userId = req.currentUserId;
+      const user = req.currentUser;
+
+      // Check if classroom exists
+      const classroom = await storage.getClassroom(classroomId);
+      if (!classroom) {
+        return res.status(404).json({ message: "Classroom not found" });
+      }
+
+      // Check if user is the teacher of this classroom
+      if (user?.role !== 'teacher' || classroom.teacherId !== userId) {
+        return res.status(403).json({ message: "Only the classroom teacher can delete this classroom" });
+      }
+
+      await storage.deleteClassroom(classroomId);
+      res.json({ message: "Classroom deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting classroom:", error);
+      res.status(500).json({ message: "Failed to delete classroom" });
+    }
+  });
+
   // Problem routes
   app.post('/api/problems', requireAuth, async (req: any, res) => {
     try {

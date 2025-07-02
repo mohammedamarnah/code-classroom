@@ -3,17 +3,33 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Clock, Trophy, Users, Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { ArrowLeft, Clock, Trophy, Users, Trash2, Edit2, Settings } from "lucide-react";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useState } from "react";
+
+const classroomUpdateSchema = z.object({
+  name: z.string().min(1, "Classroom name is required"),
+  description: z.string().optional(),
+});
+
+type ClassroomUpdateData = z.infer<typeof classroomUpdateSchema>;
 
 export default function Classroom() {
   const { id } = useParams();
   const classroomId = parseInt(id!);
   const { user } = useAuth();
   const { toast } = useToast();
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   const { data: classroom, isLoading: classroomLoading } = useQuery({
     queryKey: [`/api/classrooms/${classroomId}`],
@@ -29,6 +45,66 @@ export default function Classroom() {
 
   const { data: students } = useQuery({
     queryKey: [`/api/classrooms/${classroomId}/students`],
+  });
+
+  const form = useForm<ClassroomUpdateData>({
+    resolver: zodResolver(classroomUpdateSchema),
+    defaultValues: {
+      name: classroom?.name || "",
+      description: classroom?.description || "",
+    },
+  });
+
+  // Update form default values when classroom data changes
+  if (classroom && (form.getValues().name !== classroom.name || form.getValues().description !== classroom.description)) {
+    form.reset({
+      name: classroom.name,
+      description: classroom.description || "",
+    });
+  }
+
+  const updateClassroomMutation = useMutation({
+    mutationFn: async (data: ClassroomUpdateData) => {
+      const response = await apiRequest('PATCH', `/api/classrooms/${classroomId}`, data);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Classroom updated successfully!",
+      });
+      queryClient.invalidateQueries({ queryKey: [`/api/classrooms/${classroomId}`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/classrooms'] });
+      setShowEditDialog(false);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteClassroomMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('DELETE', `/api/classrooms/${classroomId}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Classroom deleted successfully!",
+      });
+      window.location.href = '/';
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
   });
 
   const deleteProblemMutation = useMutation({
@@ -58,6 +134,19 @@ export default function Classroom() {
     }
   };
 
+  const handleUpdateClassroom = (data: ClassroomUpdateData) => {
+    updateClassroomMutation.mutate(data);
+  };
+
+  const handleDeleteClassroom = () => {
+    if (window.confirm(`Are you sure you want to delete "${classroom?.name}"? This will permanently delete all problems, submissions, and enrollments. This action cannot be undone.`)) {
+      deleteClassroomMutation.mutate();
+    }
+  };
+
+  // Check if current user is the teacher of this classroom
+  const isClassroomTeacher = user?.role === 'teacher' && user?.id === classroom?.teacherId;
+
   if (classroomLoading || problemsLoading) {
     return (
       <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
@@ -82,17 +171,93 @@ export default function Classroom() {
     <div className="min-h-screen bg-neutral-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="flex items-center mb-8">
-          <Link href="/">
-            <Button variant="ghost" size="sm" className="mr-4">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold text-neutral-900">{classroom?.name}</h1>
-            <p className="text-neutral-600">{classroom?.description}</p>
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center">
+            <Link href="/">
+              <Button variant="ghost" size="sm" className="mr-4">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Dashboard
+              </Button>
+            </Link>
+            <div>
+              <h1 className="text-3xl font-bold text-neutral-900">{classroom?.name}</h1>
+              <p className="text-neutral-600">{classroom?.description}</p>
+            </div>
           </div>
+          
+          {/* Teacher Actions */}
+          {isClassroomTeacher && (
+            <div className="flex items-center space-x-2">
+              <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Edit2 className="w-4 h-4 mr-2" />
+                    Edit Classroom
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Edit Classroom</DialogTitle>
+                  </DialogHeader>
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(handleUpdateClassroom)} className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Classroom Name</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g., Java Programming 101" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="description"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Description (Optional)</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                rows={3} 
+                                placeholder="Describe what this classroom is about..." 
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="flex space-x-3">
+                        <Button type="submit" disabled={updateClassroomMutation.isPending}>
+                          {updateClassroomMutation.isPending ? "Updating..." : "Update Classroom"}
+                        </Button>
+                        <Button type="button" variant="outline" onClick={() => setShowEditDialog(false)}>
+                          Cancel
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
+                </DialogContent>
+              </Dialog>
+              
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleDeleteClassroom}
+                disabled={deleteClassroomMutation.isPending}
+                className="text-red-600 hover:text-red-700 border-red-300 hover:border-red-400"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                {deleteClassroomMutation.isPending ? "Deleting..." : "Delete Classroom"}
+              </Button>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
