@@ -133,6 +133,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- July 2, 2025 (8:35 PM): Implemented one-time point earning system for problem solving
+  - Added functionality to prevent users from earning points multiple times for the same problem
+  - Users can still submit solutions for practice after earning points once
+  - Added visual indicators showing when a problem has been solved
+  - Updated backend to track which problems users have solved successfully
+  - Enhanced problem solver interface with solved status badges and informational messages
+  - Modified achievement tracking to count unique problems solved instead of total submissions
+
 - July 2, 2025 (8:30 PM): Added optional test case inputs and problem deletion functionality
   - Modified problem creation form to allow optional inputs for test cases
   - Updated Java code executor to handle empty inputs properly

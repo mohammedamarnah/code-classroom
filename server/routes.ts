@@ -290,13 +290,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/problems/:id', requireAuth, async (req: any, res) => {
     try {
       const problemId = parseInt(req.params.id);
+      const userId = req.currentUserId;
       const problem = await storage.getProblem(problemId);
       
       if (!problem) {
         return res.status(404).json({ message: "Problem not found" });
       }
 
-      res.json(problem);
+      // Check if user has already solved this problem
+      const hasSolved = await storage.hasUserEarnedPointsForProblem(userId, problemId);
+
+      res.json({ ...problem, hasSolved });
     } catch (error) {
       console.error("Error fetching problem:", error);
       res.status(500).json({ message: "Failed to fetch problem" });
@@ -371,28 +375,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Execute the code
       const result = await executeJavaCode(submissionData.code, problem.testCases as any[]);
       
+      // Check if user has already earned points for this problem
+      const hasEarnedPoints = await storage.hasUserEarnedPointsForProblem(userId, submissionData.problemId);
+      
+      // Only award points if this is their first successful submission
+      const pointsToAward = (result.status === 'passed' && !hasEarnedPoints) ? problem.points : 0;
+      
       const submission = await storage.createSubmission({
         ...submissionData,
         studentId: userId,
         status: result.status,
-        pointsEarned: result.status === 'passed' ? problem.points : 0,
+        pointsEarned: pointsToAward,
         executionTime: result.executionTime,
         output: result.output,
         error: result.error,
       });
 
-      // Update user points if submission passed
-      if (result.status === 'passed') {
+      // Update user points only if this is their first successful submission
+      if (result.status === 'passed' && !hasEarnedPoints) {
         await storage.updateUserPoints(userId, problem.points);
         
-        // Check for achievements
+        // Check for achievements (only check when points are actually awarded)
         const userSubmissions = await storage.getStudentSubmissions(userId);
         const passedSubmissions = userSubmissions.filter(s => s.status === 'passed');
         
+        // Group by problem ID to count unique problems solved
+        const uniqueProblemsSolved = new Set(passedSubmissions.map(s => s.problemId)).size;
+        
         // Check for problem solving achievements
-        if (passedSubmissions.length === 10) {
+        if (uniqueProblemsSolved === 10) {
           await storage.createAchievement(userId, 'problems_solved', 'Problem Solver', 'Solved 10 problems', 100);
-        } else if (passedSubmissions.length === 20) {
+        } else if (uniqueProblemsSolved === 20) {
           await storage.createAchievement(userId, 'problems_solved', 'Code Master', 'Solved 20 problems', 200);
         }
       }

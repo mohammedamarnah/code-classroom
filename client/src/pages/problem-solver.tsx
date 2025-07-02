@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Clock, Trophy, Play, Send } from "lucide-react";
+import { ArrowLeft, Clock, Trophy, Play, Send, CheckCircle } from "lucide-react";
 import { Link } from "wouter";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -147,6 +147,12 @@ export default function ProblemSolver() {
                   {problem?.difficulty}
                 </Badge>
                 <span className="text-sm text-accent font-medium">{problem?.points} points</span>
+                {problem?.hasSolved && (
+                  <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-300">
+                    <CheckCircle className="w-3 h-3 mr-1" />
+                    Solved
+                  </Badge>
+                )}
               </div>
               <div className="flex items-center space-x-4 text-sm text-neutral-500">
                 <span>
@@ -187,7 +193,14 @@ export default function ProblemSolver() {
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
-                <CardTitle>Your Solution</CardTitle>
+                <div>
+                  <CardTitle>Your Solution</CardTitle>
+                  {problem?.hasSolved && (
+                    <p className="text-sm text-neutral-500 mt-1">
+                      You've already earned points for this problem. You can still submit for practice!
+                    </p>
+                  )}
+                </div>
                 <div className="flex space-x-2">
                   <Button 
                     variant="outline" 

@@ -52,6 +52,7 @@ export interface IStorage {
   getStudentSubmissions(studentId: string, problemId?: number): Promise<Submission[]>;
   getProblemSubmissions(problemId: number): Promise<(Submission & { student: User })[]>;
   getRecentSubmissions(limit: number): Promise<(Submission & { student: User; problem: Problem })[]>;
+  hasUserEarnedPointsForProblem(userId: string, problemId: number): Promise<boolean>;
   
   // Leaderboard operations
   getClassroomLeaderboard(classroomId: number): Promise<(User & { problemsSolved: number; rank: number })[]>;
@@ -283,6 +284,20 @@ export class DatabaseStorage implements IStorage {
       .limit(limit);
     
     return result;
+  }
+
+  async hasUserEarnedPointsForProblem(userId: string, problemId: number): Promise<boolean> {
+    const existingSubmission = await db
+      .select()
+      .from(submissions)
+      .where(and(
+        eq(submissions.studentId, userId),
+        eq(submissions.problemId, problemId),
+        eq(submissions.status, 'passed')
+      ))
+      .limit(1);
+    
+    return existingSubmission.length > 0;
   }
 
   async getClassroomLeaderboard(classroomId: number): Promise<(User & { problemsSolved: number; rank: number })[]> {
