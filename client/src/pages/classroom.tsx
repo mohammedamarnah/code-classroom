@@ -27,6 +27,10 @@ export default function Classroom() {
     queryKey: [`/api/classrooms/${classroomId}/leaderboard`],
   });
 
+  const { data: students } = useQuery({
+    queryKey: [`/api/classrooms/${classroomId}/students`],
+  });
+
   const deleteProblemMutation = useMutation({
     mutationFn: async (problemId: number) => {
       const response = await apiRequest('DELETE', `/api/problems/${problemId}`);
@@ -151,8 +155,49 @@ export default function Classroom() {
             </Card>
           </div>
 
-          {/* Leaderboard Sidebar */}
-          <div>
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* All Students */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Users className="w-5 h-5 mr-2 text-accent" />
+                  Students ({students?.length || 0})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {students?.length === 0 ? (
+                  <div className="text-center py-4 text-neutral-500">
+                    No students enrolled yet.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {students?.map((student: any) => (
+                      <div key={student.id} className="flex items-center space-x-3 p-3 rounded-lg bg-neutral-50">
+                        <div className="w-8 h-8 rounded-full bg-neutral-300 flex items-center justify-center text-sm font-bold text-neutral-700">
+                          {(student.firstName || student.email)?.[0]?.toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate text-neutral-900">
+                            {student.firstName || student.email}
+                          </p>
+                          <p className="text-xs text-neutral-500">
+                            {student.email}
+                          </p>
+                        </div>
+                        {student.role === 'teacher' && (
+                          <Badge variant="secondary" className="text-xs">
+                            Teacher
+                          </Badge>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Leaderboard */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -163,7 +208,7 @@ export default function Classroom() {
               <CardContent>
                 {leaderboard?.length === 0 ? (
                   <div className="text-center py-4 text-neutral-500">
-                    No students enrolled yet.
+                    No students with points yet.
                   </div>
                 ) : (
                   <div className="space-y-3">
