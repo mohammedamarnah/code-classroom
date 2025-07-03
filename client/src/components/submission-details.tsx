@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -52,6 +52,9 @@ export default function SubmissionDetails({
             {getStatusIcon(submission.status)}
             Submission Details
           </DialogTitle>
+          <DialogDescription>
+            View detailed information about this code submission including the code, output, and execution results.
+          </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-6">

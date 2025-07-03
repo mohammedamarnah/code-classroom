@@ -133,6 +133,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- July 3, 2025 (3:22 PM): Added clickable recent submissions with detailed modal view
+  - Made recent submission items clickable with hover effects and cursor pointer
+  - Created comprehensive SubmissionDetails modal showing submission code, output, errors, and metadata
+  - Added proper date formatting, status indicators, and accessibility features
+  - Modal displays problem details, student info, execution time, and complete submission context
+  - Fixed accessibility warning by adding dialog description
+
 - July 3, 2025 (2:19 AM): Fixed Drizzle ORM query syntax error in classroom student filtering
   - Replaced invalid `.and()` method with proper `and()` function for combining WHERE conditions
   - Fixed TypeScript compilation error in server/storage.ts
