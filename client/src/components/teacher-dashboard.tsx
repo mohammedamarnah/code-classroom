@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import ProblemForm from "./problem-form";
 import ClassroomForm from "./classroom-form";
+import SubmissionDetails from "./submission-details";
 import { useState } from "react";
 import { Presentation, Users, ClipboardList, CheckCircle, Plus, Edit, Eye } from "lucide-react";
 import { Link } from "wouter";
@@ -13,16 +14,18 @@ export default function TeacherDashboard() {
   const [showProblemForm, setShowProblemForm] = useState(false);
   const [showClassroomForm, setShowClassroomForm] = useState(false);
   const [selectedClassroom, setSelectedClassroom] = useState<number | null>(null);
+  const [selectedSubmission, setSelectedSubmission] = useState<any>(null);
+  const [showSubmissionDetails, setShowSubmissionDetails] = useState(false);
 
-  const { data: classrooms } = useQuery({
+  const { data: classrooms = [] } = useQuery({
     queryKey: ['/api/classrooms'],
   });
 
-  const { data: stats } = useQuery({
+  const { data: stats = {} } = useQuery({
     queryKey: ['/api/stats/teacher'],
   });
 
-  const { data: recentSubmissions } = useQuery({
+  const { data: recentSubmissions = [] } = useQuery({
     queryKey: ['/api/submissions/recent'],
   });
 
@@ -191,7 +194,14 @@ export default function TeacherDashboard() {
               ) : (
                 <div className="space-y-4">
                   {recentSubmissions?.slice(0, 5).map((submission: any) => (
-                    <div key={submission.id} className="flex items-center space-x-3">
+                    <div 
+                      key={submission.id} 
+                      className="flex items-center space-x-3 p-3 rounded-lg hover:bg-neutral-50 cursor-pointer transition-colors"
+                      onClick={() => {
+                        setSelectedSubmission(submission);
+                        setShowSubmissionDetails(true);
+                      }}
+                    >
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-medium ${
                         submission.status === 'passed' ? 'bg-secondary' : 'bg-red-500'
                       }`}>
@@ -214,6 +224,13 @@ export default function TeacherDashboard() {
           </Card>
         </div>
       </div>
+      
+      {/* Submission Details Modal */}
+      <SubmissionDetails
+        submission={selectedSubmission}
+        isOpen={showSubmissionDetails}
+        onClose={() => setShowSubmissionDetails(false)}
+      />
     </div>
   );
 }
