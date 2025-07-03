@@ -2,12 +2,14 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import TeacherDashboard from "@/components/teacher-dashboard";
 import StudentDashboard from "@/components/student-dashboard";
+import ProfileModal from "@/components/profile-modal";
 import { Button } from "@/components/ui/button";
 import { Code } from "lucide-react";
 
 export default function Dashboard() {
   const { user, isLoading } = useAuth();
   const [viewMode, setViewMode] = useState<'teacher' | 'student'>(user?.role === 'teacher' ? 'teacher' : 'student');
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -54,12 +56,17 @@ export default function Dashboard() {
               
               {/* User Profile */}
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-sm font-medium">
-                  {user?.firstName?.[0] || user?.email?.[0] || 'U'}
-                </div>
-                <span className="hidden sm:block text-sm font-medium">
-                  {user?.firstName || user?.email}
-                </span>
+                <button
+                  onClick={() => setIsProfileModalOpen(true)}
+                  className="flex items-center space-x-2 hover:bg-neutral-100 rounded-lg p-2 transition-colors cursor-pointer"
+                >
+                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-sm font-medium">
+                    {user?.firstName?.[0] || user?.email?.[0] || 'U'}
+                  </div>
+                  <span className="hidden sm:block text-sm font-medium">
+                    {user?.firstName || user?.email}
+                  </span>
+                </button>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -75,6 +82,15 @@ export default function Dashboard() {
 
       {/* Dashboard Content */}
       {viewMode === 'teacher' ? <TeacherDashboard /> : <StudentDashboard />}
+      
+      {/* Profile Modal */}
+      {user && (
+        <ProfileModal
+          user={user}
+          isOpen={isProfileModalOpen}
+          onClose={() => setIsProfileModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

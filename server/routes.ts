@@ -164,6 +164,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User routes
+  app.patch("/api/users/:id", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.params.id;
+      const currentUserId = req.currentUserId;
+      
+      // Users can only update their own profile
+      if (userId !== currentUserId) {
+        return res.status(403).json({ message: "Can only update your own profile" });
+      }
+
+      const { firstName } = req.body;
+      
+      if (!firstName || typeof firstName !== 'string' || firstName.trim().length === 0) {
+        return res.status(400).json({ message: "First name is required" });
+      }
+
+      if (firstName.length > 50) {
+        return res.status(400).json({ message: "First name must be less than 50 characters" });
+      }
+
+      // Update user in database
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const updatedUser = await storage.upsertUser({
+        ...user,
+        firstName: firstName.trim(),
+      });
+
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Error updating user:", error);
+      res.status(500).json({ message: "Failed to update user" });
+    }
+  });
+
   // Classroom routes
   app.post("/api/classrooms", requireAuth, async (req: any, res) => {
     try {
