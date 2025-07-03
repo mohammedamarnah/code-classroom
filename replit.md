@@ -133,6 +133,11 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- July 3, 2025 (2:19 AM): Fixed Drizzle ORM query syntax error in classroom student filtering
+  - Replaced invalid `.and()` method with proper `and()` function for combining WHERE conditions
+  - Fixed TypeScript compilation error in server/storage.ts
+  - Application now properly filters out test users from classroom student lists
+
 - July 2, 2025 (10:10 PM): Added classroom editing and deletion functionality for teachers
   - Teachers can now edit classroom names and descriptions through a modal dialog
   - Teachers can delete entire classrooms with cascading deletion of all related data

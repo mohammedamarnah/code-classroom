@@ -374,13 +374,10 @@ export class DatabaseStorage implements IStorage {
     studentId: string,
     problemId?: number,
   ): Promise<Submission[]> {
-    const query = db
-      .select()
-      .from(submissions)
-      .where(eq(submissions.studentId, studentId));
-
     if (problemId) {
-      return await query
+      return await db
+        .select()
+        .from(submissions)
         .where(
           and(
             eq(submissions.studentId, studentId),
@@ -390,7 +387,11 @@ export class DatabaseStorage implements IStorage {
         .orderBy(desc(submissions.submittedAt));
     }
 
-    return await query.orderBy(desc(submissions.submittedAt));
+    return await db
+      .select()
+      .from(submissions)
+      .where(eq(submissions.studentId, studentId))
+      .orderBy(desc(submissions.submittedAt));
   }
 
   async getProblemSubmissions(
