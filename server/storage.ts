@@ -24,46 +24,86 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
-  createEmailUser(email: string, firstName: string, hashedPassword: string): Promise<User>;
+  createEmailUser(
+    email: string,
+    firstName: string,
+    hashedPassword: string,
+  ): Promise<User>;
   updateUserPoints(userId: string, points: number): Promise<void>;
   updateUserLevel(userId: string, level: number): Promise<void>;
   updateUserTestStatus(userId: string, isTestUser: boolean): Promise<void>;
-  
+
   // Classroom operations
-  createClassroom(classroom: InsertClassroom & { teacherId: string }): Promise<Classroom>;
+  createClassroom(
+    classroom: InsertClassroom & { teacherId: string },
+  ): Promise<Classroom>;
   getClassroom(id: number): Promise<Classroom | undefined>;
   getClassroomsByTeacher(teacherId: string): Promise<Classroom[]>;
-  getClassroomsByStudent(studentId: string): Promise<(Classroom & { teacher: User })[]>;
+  getClassroomsByStudent(
+    studentId: string,
+  ): Promise<(Classroom & { teacher: User })[]>;
   getClassroomByInviteCode(inviteCode: string): Promise<Classroom | undefined>;
-  updateClassroom(id: number, updates: Partial<InsertClassroom>): Promise<Classroom>;
+  updateClassroom(
+    id: number,
+    updates: Partial<InsertClassroom>,
+  ): Promise<Classroom>;
   deleteClassroom(id: number): Promise<void>;
-  
+
   // Enrollment operations
   enrollStudent(classroomId: number, studentId: string): Promise<void>;
   getClassroomStudents(classroomId: number): Promise<User[]>;
   isStudentEnrolled(classroomId: number, studentId: string): Promise<boolean>;
-  
+
   // Problem operations
-  createProblem(problem: InsertProblem & { createdBy: string }): Promise<Problem>;
+  createProblem(
+    problem: InsertProblem & { createdBy: string },
+  ): Promise<Problem>;
   getProblem(id: number): Promise<Problem | undefined>;
   getClassroomProblems(classroomId: number): Promise<Problem[]>;
   deleteProblem(id: number): Promise<void>;
-  
+
   // Submission operations
-  createSubmission(submission: InsertSubmission & { studentId: string; status: string; pointsEarned: number; executionTime?: number; output?: string; error?: string }): Promise<Submission>;
+  createSubmission(
+    submission: InsertSubmission & {
+      studentId: string;
+      status: string;
+      pointsEarned: number;
+      executionTime?: number;
+      output?: string;
+      error?: string;
+    },
+  ): Promise<Submission>;
   getSubmission(id: number): Promise<Submission | undefined>;
-  getStudentSubmissions(studentId: string, problemId?: number): Promise<Submission[]>;
-  getProblemSubmissions(problemId: number): Promise<(Submission & { student: User })[]>;
-  getRecentSubmissions(limit: number): Promise<(Submission & { student: User; problem: Problem })[]>;
-  hasUserEarnedPointsForProblem(userId: string, problemId: number): Promise<boolean>;
-  
+  getStudentSubmissions(
+    studentId: string,
+    problemId?: number,
+  ): Promise<Submission[]>;
+  getProblemSubmissions(
+    problemId: number,
+  ): Promise<(Submission & { student: User })[]>;
+  getRecentSubmissions(
+    limit: number,
+  ): Promise<(Submission & { student: User; problem: Problem })[]>;
+  hasUserEarnedPointsForProblem(
+    userId: string,
+    problemId: number,
+  ): Promise<boolean>;
+
   // Leaderboard operations
-  getClassroomLeaderboard(classroomId: number): Promise<(User & { problemsSolved: number; rank: number })[]>;
-  
+  getClassroomLeaderboard(
+    classroomId: number,
+  ): Promise<(User & { problemsSolved: number; rank: number })[]>;
+
   // Achievement operations
-  createAchievement(userId: string, type: string, title: string, description: string, points: number): Promise<Achievement>;
+  createAchievement(
+    userId: string,
+    type: string,
+    title: string,
+    description: string,
+    points: number,
+  ): Promise<Achievement>;
   getUserAchievements(userId: string): Promise<Achievement[]>;
-  
+
   // Statistics
   getTeacherStats(teacherId: string): Promise<{
     totalClassrooms: number;
@@ -84,7 +124,11 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async createEmailUser(email: string, firstName: string, hashedPassword: string): Promise<User> {
+  async createEmailUser(
+    email: string,
+    firstName: string,
+    hashedPassword: string,
+  ): Promise<User> {
     const userId = `email_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
     const [user] = await db
       .insert(users)
@@ -93,8 +137,8 @@ export class DatabaseStorage implements IStorage {
         email,
         firstName,
         password: hashedPassword,
-        authType: 'email',
-        role: 'student',
+        authType: "email",
+        role: "student",
       })
       .returning();
     return user;
@@ -118,9 +162,9 @@ export class DatabaseStorage implements IStorage {
   async updateUserPoints(userId: string, points: number): Promise<void> {
     await db
       .update(users)
-      .set({ 
+      .set({
         totalPoints: sql`${users.totalPoints} + ${points}`,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       })
       .where(eq(users.id, userId));
   }
@@ -132,14 +176,19 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId));
   }
 
-  async updateUserTestStatus(userId: string, isTestUser: boolean): Promise<void> {
+  async updateUserTestStatus(
+    userId: string,
+    isTestUser: boolean,
+  ): Promise<void> {
     await db
       .update(users)
       .set({ testUser: isTestUser, updatedAt: new Date() })
       .where(eq(users.id, userId));
   }
 
-  async createClassroom(classroom: InsertClassroom & { teacherId: string }): Promise<Classroom> {
+  async createClassroom(
+    classroom: InsertClassroom & { teacherId: string },
+  ): Promise<Classroom> {
     const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     const [newClassroom] = await db
       .insert(classrooms)
@@ -149,15 +198,23 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getClassroom(id: number): Promise<Classroom | undefined> {
-    const [classroom] = await db.select().from(classrooms).where(eq(classrooms.id, id));
+    const [classroom] = await db
+      .select()
+      .from(classrooms)
+      .where(eq(classrooms.id, id));
     return classroom;
   }
 
   async getClassroomsByTeacher(teacherId: string): Promise<Classroom[]> {
-    return await db.select().from(classrooms).where(eq(classrooms.teacherId, teacherId));
+    return await db
+      .select()
+      .from(classrooms)
+      .where(eq(classrooms.teacherId, teacherId));
   }
 
-  async getClassroomsByStudent(studentId: string): Promise<(Classroom & { teacher: User })[]> {
+  async getClassroomsByStudent(
+    studentId: string,
+  ): Promise<(Classroom & { teacher: User })[]> {
     const result = await db
       .select({
         id: classrooms.id,
@@ -169,20 +226,32 @@ export class DatabaseStorage implements IStorage {
         teacher: users,
       })
       .from(classroomEnrollments)
-      .innerJoin(classrooms, eq(classroomEnrollments.classroomId, classrooms.id))
+      .innerJoin(
+        classrooms,
+        eq(classroomEnrollments.classroomId, classrooms.id),
+      )
       .innerJoin(users, eq(classrooms.teacherId, users.id))
       .where(eq(classroomEnrollments.studentId, studentId));
-    
+
     return result;
   }
 
-  async getClassroomByInviteCode(inviteCode: string): Promise<Classroom | undefined> {
-    const [classroom] = await db.select().from(classrooms).where(eq(classrooms.inviteCode, inviteCode));
+  async getClassroomByInviteCode(
+    inviteCode: string,
+  ): Promise<Classroom | undefined> {
+    const [classroom] = await db
+      .select()
+      .from(classrooms)
+      .where(eq(classrooms.inviteCode, inviteCode));
     return classroom;
   }
 
-  async updateClassroom(id: number, updates: Partial<InsertClassroom>): Promise<Classroom> {
-    const [updatedClassroom] = await db.update(classrooms)
+  async updateClassroom(
+    id: number,
+    updates: Partial<InsertClassroom>,
+  ): Promise<Classroom> {
+    const [updatedClassroom] = await db
+      .update(classrooms)
       .set(updates)
       .where(eq(classrooms.id, id))
       .returning();
@@ -191,19 +260,24 @@ export class DatabaseStorage implements IStorage {
 
   async deleteClassroom(id: number): Promise<void> {
     // First delete all enrollments for this classroom
-    await db.delete(classroomEnrollments).where(eq(classroomEnrollments.classroomId, id));
-    
+    await db
+      .delete(classroomEnrollments)
+      .where(eq(classroomEnrollments.classroomId, id));
+
     // Get all problems in this classroom to delete their submissions
-    const classroomProblems = await db.select().from(problems).where(eq(problems.classroomId, id));
-    
+    const classroomProblems = await db
+      .select()
+      .from(problems)
+      .where(eq(problems.classroomId, id));
+
     // Delete all submissions for problems in this classroom
     for (const problem of classroomProblems) {
       await db.delete(submissions).where(eq(submissions.problemId, problem.id));
     }
-    
+
     // Delete all problems in this classroom
     await db.delete(problems).where(eq(problems.classroomId, id));
-    
+
     // Finally delete the classroom itself
     await db.delete(classrooms).where(eq(classrooms.id, id));
   }
@@ -217,34 +291,51 @@ export class DatabaseStorage implements IStorage {
       .select({ user: users })
       .from(classroomEnrollments)
       .innerJoin(users, eq(classroomEnrollments.studentId, users.id))
-      .where(eq(classroomEnrollments.classroomId, classroomId));
-    
-    return result.map(r => r.user);
+      .where(and(
+        eq(classroomEnrollments.classroomId, classroomId),
+        eq(users.testUser, false)
+      ));
+
+    return result.map((r) => r.user);
   }
 
-  async isStudentEnrolled(classroomId: number, studentId: string): Promise<boolean> {
+  async isStudentEnrolled(
+    classroomId: number,
+    studentId: string,
+  ): Promise<boolean> {
     const [enrollment] = await db
       .select()
       .from(classroomEnrollments)
-      .where(and(
-        eq(classroomEnrollments.classroomId, classroomId),
-        eq(classroomEnrollments.studentId, studentId)
-      ));
+      .where(
+        and(
+          eq(classroomEnrollments.classroomId, classroomId),
+          eq(classroomEnrollments.studentId, studentId),
+        ),
+      );
     return !!enrollment;
   }
 
-  async createProblem(problem: InsertProblem & { createdBy: string }): Promise<Problem> {
+  async createProblem(
+    problem: InsertProblem & { createdBy: string },
+  ): Promise<Problem> {
     const [newProblem] = await db.insert(problems).values(problem).returning();
     return newProblem;
   }
 
   async getProblem(id: number): Promise<Problem | undefined> {
-    const [problem] = await db.select().from(problems).where(eq(problems.id, id));
+    const [problem] = await db
+      .select()
+      .from(problems)
+      .where(eq(problems.id, id));
     return problem;
   }
 
   async getClassroomProblems(classroomId: number): Promise<Problem[]> {
-    return await db.select().from(problems).where(eq(problems.classroomId, classroomId)).orderBy(desc(problems.createdAt));
+    return await db
+      .select()
+      .from(problems)
+      .where(eq(problems.classroomId, classroomId))
+      .orderBy(desc(problems.createdAt));
   }
 
   async deleteProblem(id: number): Promise<void> {
@@ -254,28 +345,57 @@ export class DatabaseStorage implements IStorage {
     await db.delete(problems).where(eq(problems.id, id));
   }
 
-  async createSubmission(submission: InsertSubmission & { studentId: string; status: string; pointsEarned: number; executionTime?: number; output?: string; error?: string }): Promise<Submission> {
-    const [newSubmission] = await db.insert(submissions).values(submission).returning();
+  async createSubmission(
+    submission: InsertSubmission & {
+      studentId: string;
+      status: string;
+      pointsEarned: number;
+      executionTime?: number;
+      output?: string;
+      error?: string;
+    },
+  ): Promise<Submission> {
+    const [newSubmission] = await db
+      .insert(submissions)
+      .values(submission)
+      .returning();
     return newSubmission;
   }
 
   async getSubmission(id: number): Promise<Submission | undefined> {
-    const [submission] = await db.select().from(submissions).where(eq(submissions.id, id));
+    const [submission] = await db
+      .select()
+      .from(submissions)
+      .where(eq(submissions.id, id));
     return submission;
   }
 
-  async getStudentSubmissions(studentId: string, problemId?: number): Promise<Submission[]> {
-    const query = db.select().from(submissions).where(eq(submissions.studentId, studentId));
-    
+  async getStudentSubmissions(
+    studentId: string,
+    problemId?: number,
+  ): Promise<Submission[]> {
+    const query = db
+      .select()
+      .from(submissions)
+      .where(eq(submissions.studentId, studentId));
+
     if (problemId) {
-      return await query.where(and(eq(submissions.studentId, studentId), eq(submissions.problemId, problemId)))
+      return await query
+        .where(
+          and(
+            eq(submissions.studentId, studentId),
+            eq(submissions.problemId, problemId),
+          ),
+        )
         .orderBy(desc(submissions.submittedAt));
     }
-    
+
     return await query.orderBy(desc(submissions.submittedAt));
   }
 
-  async getProblemSubmissions(problemId: number): Promise<(Submission & { student: User })[]> {
+  async getProblemSubmissions(
+    problemId: number,
+  ): Promise<(Submission & { student: User })[]> {
     const result = await db
       .select({
         id: submissions.id,
@@ -294,11 +414,13 @@ export class DatabaseStorage implements IStorage {
       .innerJoin(users, eq(submissions.studentId, users.id))
       .where(eq(submissions.problemId, problemId))
       .orderBy(desc(submissions.submittedAt));
-    
+
     return result;
   }
 
-  async getRecentSubmissions(limit: number): Promise<(Submission & { student: User; problem: Problem })[]> {
+  async getRecentSubmissions(
+    limit: number,
+  ): Promise<(Submission & { student: User; problem: Problem })[]> {
     const result = await db
       .select({
         id: submissions.id,
@@ -319,25 +441,32 @@ export class DatabaseStorage implements IStorage {
       .innerJoin(problems, eq(submissions.problemId, problems.id))
       .orderBy(desc(submissions.submittedAt))
       .limit(limit);
-    
+
     return result;
   }
 
-  async hasUserEarnedPointsForProblem(userId: string, problemId: number): Promise<boolean> {
+  async hasUserEarnedPointsForProblem(
+    userId: string,
+    problemId: number,
+  ): Promise<boolean> {
     const existingSubmission = await db
       .select()
       .from(submissions)
-      .where(and(
-        eq(submissions.studentId, userId),
-        eq(submissions.problemId, problemId),
-        eq(submissions.status, 'passed')
-      ))
+      .where(
+        and(
+          eq(submissions.studentId, userId),
+          eq(submissions.problemId, problemId),
+          eq(submissions.status, "passed"),
+        ),
+      )
       .limit(1);
-    
+
     return existingSubmission.length > 0;
   }
 
-  async getClassroomLeaderboard(classroomId: number): Promise<(User & { problemsSolved: number; rank: number })[]> {
+  async getClassroomLeaderboard(
+    classroomId: number,
+  ): Promise<(User & { problemsSolved: number; rank: number })[]> {
     const result = await db
       .select({
         id: users.id,
@@ -358,21 +487,32 @@ export class DatabaseStorage implements IStorage {
       })
       .from(classroomEnrollments)
       .innerJoin(users, eq(classroomEnrollments.studentId, users.id))
-      .leftJoin(submissions, and(
-        eq(submissions.studentId, users.id),
-        eq(submissions.status, 'passed')
-      ))
-      .where(and(
-        eq(classroomEnrollments.classroomId, classroomId),
-        eq(users.testUser, false)
-      ))
+      .leftJoin(
+        submissions,
+        and(
+          eq(submissions.studentId, users.id),
+          eq(submissions.status, "passed"),
+        ),
+      )
+      .where(
+        and(
+          eq(classroomEnrollments.classroomId, classroomId),
+          eq(users.testUser, false),
+        ),
+      )
       .groupBy(users.id)
       .orderBy(desc(users.totalPoints));
-    
+
     return result.map((user, index) => ({ ...user, rank: index + 1 }));
   }
 
-  async createAchievement(userId: string, type: string, title: string, description: string, points: number): Promise<Achievement> {
+  async createAchievement(
+    userId: string,
+    type: string,
+    title: string,
+    description: string,
+    points: number,
+  ): Promise<Achievement> {
     const [achievement] = await db
       .insert(achievements)
       .values({ userId, type, title, description, points })
@@ -402,7 +542,10 @@ export class DatabaseStorage implements IStorage {
     const [studentCount] = await db
       .select({ count: count() })
       .from(classroomEnrollments)
-      .innerJoin(classrooms, eq(classroomEnrollments.classroomId, classrooms.id))
+      .innerJoin(
+        classrooms,
+        eq(classroomEnrollments.classroomId, classrooms.id),
+      )
       .where(eq(classrooms.teacherId, teacherId));
 
     const [problemCount] = await db

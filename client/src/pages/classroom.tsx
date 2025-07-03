@@ -5,9 +5,30 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { ArrowLeft, Clock, Trophy, Users, Trash2, Edit2, Settings } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  ArrowLeft,
+  Clock,
+  Trophy,
+  Users,
+  Trash2,
+  Edit2,
+  Settings,
+} from "lucide-react";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -67,7 +88,11 @@ export default function Classroom() {
 
   const updateClassroomMutation = useMutation({
     mutationFn: async (data: ClassroomUpdateData) => {
-      const response = await apiRequest('PATCH', `/api/classrooms/${classroomId}`, data);
+      const response = await apiRequest(
+        "PATCH",
+        `/api/classrooms/${classroomId}`,
+        data,
+      );
       return response.json();
     },
     onSuccess: () => {
@@ -75,8 +100,10 @@ export default function Classroom() {
         title: "Success",
         description: "Classroom updated successfully!",
       });
-      queryClient.invalidateQueries({ queryKey: [`/api/classrooms/${classroomId}`] });
-      queryClient.invalidateQueries({ queryKey: ['/api/classrooms'] });
+      queryClient.invalidateQueries({
+        queryKey: [`/api/classrooms/${classroomId}`],
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/classrooms"] });
       setShowEditDialog(false);
     },
     onError: (error) => {
@@ -90,7 +117,10 @@ export default function Classroom() {
 
   const deleteClassroomMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('DELETE', `/api/classrooms/${classroomId}`);
+      const response = await apiRequest(
+        "DELETE",
+        `/api/classrooms/${classroomId}`,
+      );
       return response.json();
     },
     onSuccess: () => {
@@ -98,7 +128,7 @@ export default function Classroom() {
         title: "Success",
         description: "Classroom deleted successfully!",
       });
-      window.location.href = '/';
+      window.location.href = "/";
     },
     onError: (error) => {
       toast({
@@ -111,7 +141,7 @@ export default function Classroom() {
 
   const deleteProblemMutation = useMutation({
     mutationFn: async (problemId: number) => {
-      const response = await apiRequest('DELETE', `/api/problems/${problemId}`);
+      const response = await apiRequest("DELETE", `/api/problems/${problemId}`);
       return response.json();
     },
     onSuccess: () => {
@@ -119,7 +149,9 @@ export default function Classroom() {
         title: "Success",
         description: "Problem deleted successfully!",
       });
-      queryClient.invalidateQueries({ queryKey: [`/api/classrooms/${classroomId}/problems`] });
+      queryClient.invalidateQueries({
+        queryKey: [`/api/classrooms/${classroomId}/problems`],
+      });
     },
     onError: (error) => {
       toast({
@@ -130,8 +162,15 @@ export default function Classroom() {
     },
   });
 
-  const handleDeleteProblem = async (problemId: number, problemTitle: string) => {
-    if (window.confirm(`Are you sure you want to delete "${problemTitle}"? This action cannot be undone.`)) {
+  const handleDeleteProblem = async (
+    problemId: number,
+    problemTitle: string,
+  ) => {
+    if (
+      window.confirm(
+        `Are you sure you want to delete "${problemTitle}"? This action cannot be undone.`,
+      )
+    ) {
       deleteProblemMutation.mutate(problemId);
     }
   };
@@ -141,13 +180,18 @@ export default function Classroom() {
   };
 
   const handleDeleteClassroom = () => {
-    if (window.confirm(`Are you sure you want to delete "${classroom?.name}"? This will permanently delete all problems, submissions, and enrollments. This action cannot be undone.`)) {
+    if (
+      window.confirm(
+        `Are you sure you want to delete "${classroom?.name}"? This will permanently delete all problems, submissions, and enrollments. This action cannot be undone.`,
+      )
+    ) {
       deleteClassroomMutation.mutate();
     }
   };
 
   // Check if current user is the teacher of this classroom
-  const isClassroomTeacher = user?.role === 'teacher' && user?.id === classroom?.teacherId;
+  const isClassroomTeacher =
+    user?.role === "teacher" && user?.id === classroom?.teacherId;
 
   if (classroomLoading || problemsLoading) {
     return (
@@ -162,10 +206,14 @@ export default function Classroom() {
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'easy': return 'bg-secondary text-white';
-      case 'medium': return 'bg-accent text-white';
-      case 'hard': return 'bg-red-500 text-white';
-      default: return 'bg-neutral-500 text-white';
+      case "easy":
+        return "bg-secondary text-white";
+      case "medium":
+        return "bg-accent text-white";
+      case "hard":
+        return "bg-red-500 text-white";
+      default:
+        return "bg-neutral-500 text-white";
     }
   };
 
@@ -182,11 +230,13 @@ export default function Classroom() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-neutral-900">{classroom?.name}</h1>
+              <h1 className="text-3xl font-bold text-neutral-900">
+                {classroom?.name}
+              </h1>
               <p className="text-neutral-600">{classroom?.description}</p>
             </div>
           </div>
-          
+
           {/* Teacher Actions */}
           {isClassroomTeacher && (
             <div className="flex items-center space-x-2">
@@ -202,7 +252,10 @@ export default function Classroom() {
                     <DialogTitle>Edit Classroom</DialogTitle>
                   </DialogHeader>
                   <Form {...form}>
-                    <form onSubmit={form.handleSubmit(handleUpdateClassroom)} className="space-y-4">
+                    <form
+                      onSubmit={form.handleSubmit(handleUpdateClassroom)}
+                      className="space-y-4"
+                    >
                       <FormField
                         control={form.control}
                         name="name"
@@ -210,13 +263,16 @@ export default function Classroom() {
                           <FormItem>
                             <FormLabel>Classroom Name</FormLabel>
                             <FormControl>
-                              <Input placeholder="e.g., Java Programming 101" {...field} />
+                              <Input
+                                placeholder="e.g., Java Programming 101"
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="description"
@@ -224,10 +280,10 @@ export default function Classroom() {
                           <FormItem>
                             <FormLabel>Description (Optional)</FormLabel>
                             <FormControl>
-                              <Textarea 
-                                rows={3} 
-                                placeholder="Describe what this classroom is about..." 
-                                {...field} 
+                              <Textarea
+                                rows={3}
+                                placeholder="Describe what this classroom is about..."
+                                {...field}
                               />
                             </FormControl>
                             <FormMessage />
@@ -236,10 +292,19 @@ export default function Classroom() {
                       />
 
                       <div className="flex space-x-3">
-                        <Button type="submit" disabled={updateClassroomMutation.isPending}>
-                          {updateClassroomMutation.isPending ? "Updating..." : "Update Classroom"}
+                        <Button
+                          type="submit"
+                          disabled={updateClassroomMutation.isPending}
+                        >
+                          {updateClassroomMutation.isPending
+                            ? "Updating..."
+                            : "Update Classroom"}
                         </Button>
-                        <Button type="button" variant="outline" onClick={() => setShowEditDialog(false)}>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setShowEditDialog(false)}
+                        >
                           Cancel
                         </Button>
                       </div>
@@ -247,16 +312,18 @@ export default function Classroom() {
                   </Form>
                 </DialogContent>
               </Dialog>
-              
-              <Button 
-                variant="outline" 
-                size="sm" 
+
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleDeleteClassroom}
                 disabled={deleteClassroomMutation.isPending}
                 className="text-red-600 hover:text-red-700 border-red-300 hover:border-red-400"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
-                {deleteClassroomMutation.isPending ? "Deleting..." : "Delete Classroom"}
+                {deleteClassroomMutation.isPending
+                  ? "Deleting..."
+                  : "Delete Classroom"}
               </Button>
             </div>
           )}
@@ -277,17 +344,30 @@ export default function Classroom() {
                 ) : (
                   <div className="space-y-4">
                     {problems?.map((problem: any) => (
-                      <div key={problem.id} className="border border-neutral-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                      <div
+                        key={problem.id}
+                        className="border border-neutral-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                      >
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
                             <div className="flex items-center space-x-3 mb-2">
-                              <h4 className="font-semibold text-neutral-900">{problem.title}</h4>
-                              <Badge className={getDifficultyColor(problem.difficulty)}>
+                              <h4 className="font-semibold text-neutral-900">
+                                {problem.title}
+                              </h4>
+                              <Badge
+                                className={getDifficultyColor(
+                                  problem.difficulty,
+                                )}
+                              >
                                 {problem.difficulty}
                               </Badge>
-                              <span className="text-sm text-accent font-medium">{problem.points} pts</span>
+                              <span className="text-sm text-accent font-medium">
+                                {problem.points} pts
+                              </span>
                             </div>
-                            <p className="text-sm text-neutral-600 mb-3">{problem.description}</p>
+                            <p className="text-sm text-neutral-600 mb-3">
+                              {problem.description}
+                            </p>
                             <div className="flex items-center space-x-4 text-xs text-neutral-500">
                               <span>
                                 <Clock className="w-3 h-3 inline mr-1" />
@@ -297,21 +377,25 @@ export default function Classroom() {
                           </div>
                           <div className="flex items-center space-x-2 ml-4">
                             <Link href={`/problem/${problem.id}`}>
-                              <Button>
-                                Solve
-                              </Button>
+                              <Button>Solve</Button>
                             </Link>
-                            {user?.role === 'teacher' && user?.id === problem.createdBy && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDeleteProblem(problem.id, problem.title)}
-                                disabled={deleteProblemMutation.isPending}
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            )}
+                            {user?.role === "teacher" &&
+                              user?.id === problem.createdBy && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    handleDeleteProblem(
+                                      problem.id,
+                                      problem.title,
+                                    )
+                                  }
+                                  disabled={deleteProblemMutation.isPending}
+                                  className="text-red-600 hover:text-red-700"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              )}
                           </div>
                         </div>
                       </div>
@@ -340,9 +424,13 @@ export default function Classroom() {
                 ) : (
                   <div className="space-y-3">
                     {students?.map((student: any) => (
-                      <div key={student.id} className="flex items-center space-x-3 p-3 rounded-lg bg-neutral-50">
+                      <div
+                        key={student.id}
+                        className="flex items-center space-x-3 p-3 rounded-lg bg-neutral-50"
+                      >
                         <div className="w-8 h-8 rounded-full bg-neutral-300 flex items-center justify-center text-sm font-bold text-neutral-700">
-                          {(student.firstName || student.email)?.[0]?.toUpperCase()}
+                          {(student.firstName ||
+                            student.email)?.[0]?.toUpperCase()}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate text-neutral-900">
@@ -352,7 +440,7 @@ export default function Classroom() {
                             {student.email}
                           </p>
                         </div>
-                        {student.role === 'teacher' && (
+                        {student.role === "teacher" && (
                           <Badge variant="secondary" className="text-xs">
                             Teacher
                           </Badge>
@@ -379,35 +467,51 @@ export default function Classroom() {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {leaderboard?.slice(0, 10).map((student: any, index: number) => (
-                      <div key={student.id} className={`flex items-center space-x-3 p-3 rounded-lg ${
-                        index === 0 ? 'bg-gradient-to-r from-accent to-orange-600 text-white' : 'bg-neutral-50'
-                      }`}>
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                          index === 0 ? 'bg-white bg-opacity-20' :
-                          index === 1 ? 'bg-neutral-400 text-white' :
-                          index === 2 ? 'bg-orange-400 text-white' :
-                          'bg-neutral-300 text-neutral-700'
-                        }`}>
-                          {index + 1}
+                    {leaderboard
+                      ?.slice(0, 10)
+                      .map((student: any, index: number) => (
+                        <div
+                          key={student.id}
+                          className={`flex items-center space-x-3 p-3 rounded-lg ${
+                            index === 0
+                              ? "bg-gradient-to-r from-accent to-orange-600 text-white"
+                              : "bg-neutral-50"
+                          }`}
+                        >
+                          <div
+                            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                              index === 0
+                                ? "bg-white bg-opacity-20"
+                                : index === 1
+                                  ? "bg-neutral-400 text-white"
+                                  : index === 2
+                                    ? "bg-orange-400 text-white"
+                                    : "bg-neutral-300 text-neutral-700"
+                            }`}
+                          >
+                            {index + 1}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p
+                              className={`text-sm font-medium truncate ${
+                                index === 0 ? "text-white" : "text-neutral-900"
+                              }`}
+                            >
+                              {student.firstName || student.email}
+                            </p>
+                            <p
+                              className={`text-xs ${
+                                index === 0
+                                  ? "text-white opacity-75"
+                                  : "text-neutral-500"
+                              }`}
+                            >
+                              {student.totalPoints} points
+                            </p>
+                          </div>
+                          {index === 0 && <Trophy className="w-4 h-4" />}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className={`text-sm font-medium truncate ${
-                            index === 0 ? 'text-white' : 'text-neutral-900'
-                          }`}>
-                            {student.firstName || student.email}
-                          </p>
-                          <p className={`text-xs ${
-                            index === 0 ? 'text-white opacity-75' : 'text-neutral-500'
-                          }`}>
-                            {student.totalPoints} points
-                          </p>
-                        </div>
-                        {index === 0 && (
-                          <Trophy className="w-4 h-4" />
-                        )}
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 )}
               </CardContent>
