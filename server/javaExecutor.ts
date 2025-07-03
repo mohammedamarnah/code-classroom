@@ -17,7 +17,8 @@ interface ExecutionResult {
 
 export async function executeJavaCode(code: string, testCases: TestCase[]): Promise<ExecutionResult> {
   const tempDir = path.join(process.cwd(), 'temp');
-  const fileName = `Solution_${nanoid()}.java`;
+  const suffix = nanoid().replace(/-/g, '');
+  const fileName = `Solution_${suffix}.java`;
   const filePath = path.join(tempDir, fileName);
   const className = fileName.replace('.java', '');
 
