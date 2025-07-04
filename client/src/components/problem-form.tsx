@@ -12,6 +12,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Minus } from "lucide-react";
+import CodeMirror from '@uiw/react-codemirror';
+import { java } from '@codemirror/lang-java';
+import { oneDark } from '@codemirror/theme-one-dark';
+import { indentWithTab } from '@codemirror/commands';
+import { keymap, EditorView } from '@codemirror/view';
 
 const problemSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -236,11 +241,45 @@ export default function ProblemForm({ classrooms, onSuccess, onCancel }: Problem
                 <FormItem>
                   <FormLabel>Starter Code (Optional)</FormLabel>
                   <FormControl>
-                    <Textarea 
-                      rows={4} 
-                      placeholder="public class Solution {&#10;    // Your code here&#10;}" 
-                      {...field} 
-                    />
+                    <div className="border rounded-md overflow-hidden">
+                      <CodeMirror
+                        value={field.value || ""}
+                        height="200px"
+                        theme={oneDark}
+                        extensions={[
+                          java(),
+                          keymap.of([indentWithTab]),
+                          EditorView.theme({
+                            "&": {
+                              fontSize: "14px",
+                            },
+                            ".cm-content": {
+                              padding: "12px",
+                            },
+                            ".cm-focused": {
+                              outline: "none",
+                            },
+                          }),
+                          EditorView.lineWrapping,
+                        ]}
+                        onChange={(value) => field.onChange(value)}
+                        placeholder="public class Solution {
+    // Your starter code here
+    
+}"
+                        basicSetup={{
+                          lineNumbers: true,
+                          foldGutter: true,
+                          dropCursor: false,
+                          allowMultipleSelections: false,
+                          indentOnInput: true,
+                          bracketMatching: true,
+                          closeBrackets: true,
+                          autocompletion: true,
+                          highlightSelectionMatches: true,
+                        }}
+                      />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
