@@ -487,6 +487,7 @@ export class DatabaseStorage implements IStorage {
         createdAt: users.createdAt,
         updatedAt: users.updatedAt,
         problemsSolved: count(submissions.id),
+        earliestSubmission: sql`MIN(${submissions.submittedAt})`.as('earliest_submission'),
       })
       .from(classroomEnrollments)
       .innerJoin(users, eq(classroomEnrollments.studentId, users.id))
@@ -504,7 +505,7 @@ export class DatabaseStorage implements IStorage {
         ),
       )
       .groupBy(users.id)
-      .orderBy(desc(users.totalPoints));
+      .orderBy(desc(users.totalPoints), sql`MIN(${submissions.submittedAt}) ASC`);
 
     return result.map((user, index) => ({ ...user, rank: index + 1 }));
   }
