@@ -291,10 +291,12 @@ export class DatabaseStorage implements IStorage {
       .select({ user: users })
       .from(classroomEnrollments)
       .innerJoin(users, eq(classroomEnrollments.studentId, users.id))
-      .where(and(
-        eq(classroomEnrollments.classroomId, classroomId),
-        eq(users.testUser, false)
-      ));
+      .where(
+        and(
+          eq(classroomEnrollments.classroomId, classroomId),
+          eq(users.testUser, false),
+        ),
+      );
 
     return result.map((r) => r.user);
   }
