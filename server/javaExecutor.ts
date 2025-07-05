@@ -8,11 +8,19 @@ interface TestCase {
   expectedOutput: string;
 }
 
+interface TestCaseResult {
+  input: string;
+  expectedOutput: string;
+  actualOutput: string;
+  passed: boolean;
+}
+
 interface ExecutionResult {
   status: 'passed' | 'failed' | 'error';
   output?: string;
   error?: string;
   executionTime?: number;
+  testCaseResults?: TestCaseResult[];
 }
 
 export async function executeJavaCode(code: string, testCases: TestCase[]): Promise<ExecutionResult> {
@@ -51,6 +59,7 @@ export async function executeJavaCode(code: string, testCases: TestCase[]): Prom
     let allTestsPassed = true;
     let output = '';
     let error = '';
+    const testCaseResults: TestCaseResult[] = [];
 
     for (let i = 0; i < testCases.length; i++) {
       const testCase = testCases[i];
@@ -71,15 +80,49 @@ export async function executeJavaCode(code: string, testCases: TestCase[]): Prom
       if (executeResult.exitCode !== 0) {
         allTestsPassed = false;
         error = `Runtime Error in Test Case ${i + 1}: ${executeResult.stderr}`;
+        
+        // Add failed test case result
+        testCaseResults.push({
+          input: testCase.input,
+          expectedOutput: testCase.expectedOutput,
+          actualOutput: `Runtime Error: ${executeResult.stderr}`,
+          passed: false
+        });
         break;
       }
 
-      const actualOutput = executeResult.stdout.trim();
-      const expectedOutput = testCase.expectedOutput.trim();
+      // Compare outputs more carefully - only trim trailing newlines, preserve internal spacing
+      const actualOutput = executeResult.stdout.replace(/\n+$/, '');
+      const expectedOutput = testCase.expectedOutput.replace(/\n+$/, '');
+      const testPassed = actualOutput === expectedOutput;
 
-      if (actualOutput !== expectedOutput) {
+      testCaseResults.push({
+        input: testCase.input,
+        expectedOutput: testCase.expectedOutput,
+        actualOutput: executeResult.stdout,
+        passed: testPassed
+      });
+
+      if (!testPassed) {
         allTestsPassed = false;
-        error = `Test Case ${i + 1} Failed - Expected: "${expectedOutput}", Got: "${actualOutput}"`;
+        // Create a more detailed error message showing the difference
+        const expectedLines = expectedOutput.split('\n');
+        const actualLines = actualOutput.split('\n');
+        
+        if (expectedLines.length !== actualLines.length) {
+          error = `Test Case ${i + 1} Failed - Different number of lines. Expected ${expectedLines.length} lines, got ${actualLines.length} lines.`;
+        } else {
+          // Find the first differing line
+          for (let j = 0; j < expectedLines.length; j++) {
+            if (expectedLines[j] !== actualLines[j]) {
+              error = `Test Case ${i + 1} Failed - Line ${j + 1} differs.\nExpected: "${expectedLines[j]}"\nActual: "${actualLines[j]}"`;
+              break;
+            }
+          }
+          if (!error) {
+            error = `Test Case ${i + 1} Failed - Outputs differ in whitespace or formatting.`;
+          }
+        }
         break;
       }
 
@@ -96,6 +139,7 @@ export async function executeJavaCode(code: string, testCases: TestCase[]): Prom
       output: allTestsPassed ? `All ${testCases.length} test cases passed!` : output,
       error: allTestsPassed ? undefined : error,
       executionTime,
+      testCaseResults,
     };
 
   } catch (error) {

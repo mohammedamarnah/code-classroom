@@ -25,12 +25,15 @@ export default function ProblemSolver() {
     queryKey: [`/api/problems/${problemId}`],
   });
 
+  // Type cast for problem data to avoid TypeScript errors
+  const problemData = problem as any;
+
   // Initialize code with starter code when problem data loads
   useEffect(() => {
-    if (problem?.starterCode && !code) {
-      setCode(problem.starterCode);
+    if (problemData?.starterCode && !code) {
+      setCode(problemData.starterCode);
     }
-  }, [problem, code]);
+  }, [problemData, code]);
 
   const testMutation = useMutation({
     mutationFn: async (code: string) => {
@@ -134,7 +137,7 @@ export default function ProblemSolver() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center">
-            <Link href={`/classroom/${problem?.classroomId}`}>
+            <Link href={`/classroom/${problemData?.classroomId}`}>
               <Button variant="ghost" size="sm" className="mr-4">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Classroom
@@ -142,12 +145,12 @@ export default function ProblemSolver() {
             </Link>
             <div>
               <div className="flex items-center space-x-3 mb-2">
-                <h1 className="text-3xl font-bold text-neutral-900">{problem?.title}</h1>
-                <Badge className={getDifficultyColor(problem?.difficulty)}>
-                  {problem?.difficulty}
+                <h1 className="text-3xl font-bold text-neutral-900">{problemData?.title}</h1>
+                <Badge className={getDifficultyColor(problemData?.difficulty)}>
+                  {problemData?.difficulty}
                 </Badge>
-                <span className="text-sm text-accent font-medium">{problem?.points} points</span>
-                {problem?.hasSolved && (
+                <span className="text-sm text-accent font-medium">{problemData?.points} points</span>
+                {problemData?.hasSolved && (
                   <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-300">
                     <CheckCircle className="w-3 h-3 mr-1" />
                     Solved
@@ -157,7 +160,7 @@ export default function ProblemSolver() {
               <div className="flex items-center space-x-4 text-sm text-neutral-500">
                 <span>
                   <Clock className="w-4 h-4 inline mr-1" />
-                  {problem?.timeLimit} seconds
+                  {problemData?.timeLimit} seconds
                 </span>
               </div>
             </div>
@@ -172,17 +175,30 @@ export default function ProblemSolver() {
             </CardHeader>
             <CardContent className="prose prose-sm max-w-none">
               <div className="whitespace-pre-wrap text-neutral-600">
-                {problem?.description}
+                {problemData?.description}
               </div>
               
-              {problem?.testCases && problem.testCases.length > 0 && (
+              {problemData?.testCases && problemData.testCases.length > 0 && (
                 <div className="mt-6">
                   <h4 className="font-medium text-neutral-900 mb-3">Example:</h4>
                   <div className="bg-neutral-100 p-3 rounded text-sm font-mono">
-                    {(problem.testCases as any[])[0]?.input && (
-                      <div><strong>Input:</strong> {(problem.testCases as any[])[0]?.input}</div>
+                    {(problemData.testCases as any[])[0]?.input && (
+                      <div className="mb-2">
+                        <strong>Input:</strong>
+                        <pre className="mt-1 whitespace-pre-wrap text-neutral-700 bg-white p-2 rounded border">
+                          {(problemData.testCases as any[])[0]?.input}
+                        </pre>
+                      </div>
                     )}
-                    <div><strong>Output:</strong> {(problem.testCases as any[])[0]?.expectedOutput}</div>
+                    <div>
+                      <strong>Expected Output:</strong>
+                      <pre className="mt-1 whitespace-pre-wrap text-neutral-700 bg-white p-2 rounded border">
+                        {(problemData.testCases as any[])[0]?.expectedOutput}
+                      </pre>
+                      <div className="text-xs text-neutral-500 mt-1">
+                        Note: Pay attention to line breaks and spacing in the output format
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -195,7 +211,7 @@ export default function ProblemSolver() {
               <div className="flex justify-between items-center">
                 <div>
                   <CardTitle>Your Solution</CardTitle>
-                  {problem?.hasSolved && (
+                  {problemData?.hasSolved && (
                     <p className="text-sm text-neutral-500 mt-1">
                       You've already earned points for this problem. You can still submit for practice!
                     </p>
@@ -253,7 +269,7 @@ export default function ProblemSolver() {
                     EditorView.lineWrapping
                   ]}
                   onChange={(value) => setCode(value)}
-                  placeholder={problem?.starterCode || `public class Solution {
+                  placeholder={problemData?.starterCode || `public class Solution {
     public static void main(String[] args) {
         // Your code here
         
@@ -272,6 +288,81 @@ export default function ProblemSolver() {
                   }}
                 />
               </div>
+
+              {/* Test Result Display */}
+              {testResult && (
+                <div className="mt-4 p-4 border rounded-md">
+                  <h5 className="font-medium mb-2">Test Result</h5>
+                  <div
+                    className={`p-3 rounded-md ${
+                      testResult.status === "passed"
+                        ? "bg-green-50 text-green-800 border border-green-200"
+                        : "bg-red-50 text-red-800 border border-red-200"
+                    }`}
+                  >
+                    <div className="font-medium mb-1">
+                      Status:{" "}
+                      {testResult.status === "passed" ? "✅ Passed" : "❌ Failed"}
+                    </div>
+                    {testResult.executionTime && (
+                      <div className="text-sm">
+                        Execution Time: {testResult.executionTime}ms
+                      </div>
+                    )}
+                    {testResult.output && (
+                      <div className="mt-2">
+                        <div className="text-sm font-medium">Output:</div>
+                        <pre className="text-xs bg-white p-2 rounded mt-1 whitespace-pre-wrap border font-mono">
+                          {testResult.output}
+                        </pre>
+                      </div>
+                    )}
+                    {testResult.error && (
+                      <div className="mt-2">
+                        <div className="text-sm font-medium">Error Details:</div>
+                        <pre className="text-xs bg-white p-2 rounded mt-1 whitespace-pre-wrap border font-mono">
+                          {testResult.error}
+                        </pre>
+                      </div>
+                    )}
+                    {testResult.testCaseResults && testResult.testCaseResults.length > 0 && (
+                      <div className="mt-3">
+                        <div className="text-sm font-medium mb-2">Test Case Details:</div>
+                        <div className="space-y-2">
+                          {testResult.testCaseResults.map((result: any, index: number) => (
+                            <div key={index} className="bg-white p-2 rounded border">
+                              <div className="text-xs font-medium mb-1">Test Case {index + 1}</div>
+                              {result.input && (
+                                <div className="mb-1">
+                                  <span className="text-xs font-medium">Input:</span>
+                                  <pre className="text-xs bg-neutral-50 p-1 rounded mt-1 whitespace-pre-wrap font-mono">
+                                    {result.input}
+                                  </pre>
+                                </div>
+                              )}
+                              <div className="mb-1">
+                                <span className="text-xs font-medium">Expected Output:</span>
+                                <pre className="text-xs bg-neutral-50 p-1 rounded mt-1 whitespace-pre-wrap font-mono">
+                                  {result.expectedOutput}
+                                </pre>
+                              </div>
+                              <div>
+                                <span className="text-xs font-medium">Your Output:</span>
+                                <pre className="text-xs bg-neutral-50 p-1 rounded mt-1 whitespace-pre-wrap font-mono">
+                                  {result.actualOutput}
+                                </pre>
+                              </div>
+                              <div className={`text-xs mt-1 font-medium ${result.passed ? 'text-green-600' : 'text-red-600'}`}>
+                                {result.passed ? '✅ Passed' : '❌ Failed'}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
