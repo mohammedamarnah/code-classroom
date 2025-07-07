@@ -193,6 +193,12 @@ export default function Classroom() {
   const isClassroomTeacher =
     user?.role === "teacher" && user?.id === classroom?.teacherId;
 
+  // Utility function to truncate text
+  const truncateText = (text: string, maxLength: number = 120) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength).trim() + "...";
+  };
+
   if (classroomLoading || problemsLoading) {
     return (
       <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
@@ -366,7 +372,7 @@ export default function Classroom() {
                               </span>
                             </div>
                             <p className="text-sm text-neutral-600 mb-3">
-                              {problem.description}
+                              {truncateText(problem.description)}
                             </p>
                             <div className="flex items-center space-x-4 text-xs text-neutral-500">
                               <span>
