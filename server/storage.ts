@@ -67,6 +67,10 @@ export interface IStorage {
     createdBy: string,
     includeSchedule?: boolean,
   ): Promise<Problem>;
+  updateProblem(
+    id: number,
+    updates: Partial<InsertProblem>,
+  ): Promise<Problem>;
 
   // Submission operations
   createSubmission(
@@ -381,6 +385,18 @@ export class DatabaseStorage implements IStorage {
 
     const [newProblem] = await db.insert(problems).values(problemCopy).returning();
     return newProblem;
+  }
+
+  async updateProblem(
+    id: number,
+    updates: Partial<InsertProblem>,
+  ): Promise<Problem> {
+    const [updatedProblem] = await db
+      .update(problems)
+      .set(updates)
+      .where(eq(problems.id, id))
+      .returning();
+    return updatedProblem;
   }
 
   async createSubmission(

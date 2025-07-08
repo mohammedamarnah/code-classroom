@@ -133,6 +133,17 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- July 8, 2025 (3:50 PM): Added problem copying functionality between classrooms
+  - Added `copyProblem` method to storage interface for duplicating problems
+  - Created `/api/problems/:id/copy` API endpoint with proper teacher authorization
+  - Built CopyProblemModal component with classroom selection and schedule options
+  - Added copy button next to delete button for problem creators in classroom view
+  - Teachers can copy problems they created to any of their other classrooms
+  - Modal provides option to copy with or without original schedule timing
+  - Includes problem preview showing title, description, difficulty, points, and time limit
+  - Validates permissions ensuring only problem creators can copy their own problems
+  - Successfully tested and deployed to production
+
 - January 7, 2025 (3:05 AM): Added scheduled problem functionality
   - Added `scheduledAt` timestamp field to problems table for scheduling release times
   - Updated problem creation form with scheduling toggle and datetime picker

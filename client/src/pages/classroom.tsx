@@ -31,6 +31,7 @@ import {
   Lock,
   Calendar,
   Copy,
+  Edit,
 } from "lucide-react";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
@@ -43,6 +44,7 @@ import { useState, useEffect } from "react";
 import { formatDistanceToNow, isPast } from "date-fns";
 import Leaderboard from "@/components/leaderboard";
 import CopyProblemModal from "@/components/copy-problem-modal";
+import EditProblemModal from "@/components/edit-problem-modal";
 
 const classroomUpdateSchema = z.object({
   name: z.string().min(1, "Classroom name is required"),
@@ -58,6 +60,13 @@ export default function Classroom() {
   const { toast } = useToast();
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [copyProblemModal, setCopyProblemModal] = useState<{
+    isOpen: boolean;
+    problem: any;
+  }>({
+    isOpen: false,
+    problem: null,
+  });
+  const [editProblemModal, setEditProblemModal] = useState<{
     isOpen: boolean;
     problem: any;
   }>({
@@ -274,6 +283,20 @@ export default function Classroom() {
     });
   };
 
+  const handleEditProblem = (problem: any) => {
+    setEditProblemModal({
+      isOpen: true,
+      problem,
+    });
+  };
+
+  const handleCloseEditModal = () => {
+    setEditProblemModal({
+      isOpen: false,
+      problem: null,
+    });
+  };
+
   return (
     <div className="min-h-screen bg-neutral-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -470,6 +493,14 @@ export default function Classroom() {
                                     <Button
                                       variant="outline"
                                       size="sm"
+                                      onClick={() => handleEditProblem(problem)}
+                                      className="text-green-600 hover:text-green-700"
+                                    >
+                                      <Edit className="w-4 h-4" />
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
                                       onClick={() => handleCopyProblem(problem)}
                                       className="text-blue-600 hover:text-blue-700"
                                     >
@@ -622,6 +653,13 @@ export default function Classroom() {
         isOpen={copyProblemModal.isOpen}
         onClose={handleCloseCopyModal}
         currentClassroomId={classroomId}
+      />
+
+      {/* Edit Problem Modal */}
+      <EditProblemModal
+        problem={editProblemModal.problem}
+        isOpen={editProblemModal.isOpen}
+        onClose={handleCloseEditModal}
       />
     </div>
   );

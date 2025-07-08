@@ -536,6 +536,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/problems/:id", requireAuth, async (req: any, res) => {
+    try {
+      const problemId = parseInt(req.params.id);
+      const userId = req.currentUserId;
+      const user = await storage.getUser(userId);
+
+      if (user?.role !== "teacher") {
+        return res
+          .status(403)
+          .json({ message: "Only teachers can edit problems" });
+      }
+
+      // Check if the problem exists
+      const originalProblem = await storage.getProblem(problemId);
+      if (!originalProblem) {
+        return res.status(404).json({ message: "Problem not found" });
+      }
+
+      // Check if the teacher created this problem
+      if (originalProblem.createdBy !== userId) {
+        return res
+          .status(403)
+          .json({ message: "You can only edit problems you created" });
+      }
+
+      // Validate the request body
+      const problemData = insertProblemSchema.parse(req.body);
+      
+      // Update the problem
+      const updatedProblem = await storage.updateProblem(problemId, {
+        ...problemData,
+        scheduledAt: problemData.scheduledAt ? new Date(problemData.scheduledAt) : null,
+      });
+
+      res.json(updatedProblem);
+    } catch (error) {
+      console.error("Error updating problem:", error);
+      res.status(500).json({ message: "Failed to update problem" });
+    }
+  });
+
   // Test problem route
   app.post("/api/problems/:id/test", async (req: any, res) => {
     try {
