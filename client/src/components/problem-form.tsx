@@ -111,7 +111,13 @@ export default function ProblemForm({ classrooms, onSuccess, onCancel }: Problem
     createProblemMutation.mutate({
       ...data,
       testCases,
-      scheduledAt: isScheduled && data.scheduledAt ? new Date(data.scheduledAt).toISOString() : null,
+      scheduledAt: isScheduled && data.scheduledAt ? 
+        (() => {
+          // datetime-local gives us a string without timezone info
+          // We need to treat it as local time and convert to UTC
+          const localDate = new Date(data.scheduledAt);
+          return localDate.toISOString();
+        })() : null,
     });
   };
 
@@ -320,10 +326,24 @@ export default function ProblemForm({ classrooms, onSuccess, onCancel }: Problem
                         <Input
                           type="datetime-local"
                           {...field}
-                          min={new Date(Date.now() + 60000).toISOString().slice(0, 16)}
+                          min={(() => {
+                            // Get current time and add 1 minute
+                            const now = new Date();
+                            now.setMinutes(now.getMinutes() + 1);
+                            // Format for datetime-local (which expects local time)
+                            const year = now.getFullYear();
+                            const month = String(now.getMonth() + 1).padStart(2, '0');
+                            const day = String(now.getDate()).padStart(2, '0');
+                            const hours = String(now.getHours()).padStart(2, '0');
+                            const minutes = String(now.getMinutes()).padStart(2, '0');
+                            return `${year}-${month}-${day}T${hours}:${minutes}`;
+                          })()}
                         />
                       </FormControl>
                       <FormMessage />
+                      <p className="text-xs text-neutral-500 mt-1">
+                        Time shown is in your local timezone ({Intl.DateTimeFormat().resolvedOptions().timeZone})
+                      </p>
                     </FormItem>
                   )}
                 />
