@@ -61,6 +61,12 @@ export interface IStorage {
   getProblem(id: number): Promise<Problem | undefined>;
   getClassroomProblems(classroomId: number): Promise<Problem[]>;
   deleteProblem(id: number): Promise<void>;
+  copyProblem(
+    problemId: number,
+    targetClassroomId: number,
+    createdBy: string,
+    includeSchedule?: boolean,
+  ): Promise<Problem>;
 
   // Submission operations
   createSubmission(
@@ -345,6 +351,36 @@ export class DatabaseStorage implements IStorage {
     await db.delete(submissions).where(eq(submissions.problemId, id));
     // Then delete the problem itself
     await db.delete(problems).where(eq(problems.id, id));
+  }
+
+  async copyProblem(
+    problemId: number,
+    targetClassroomId: number,
+    createdBy: string,
+    includeSchedule: boolean = false,
+  ): Promise<Problem> {
+    // Get the original problem
+    const originalProblem = await this.getProblem(problemId);
+    if (!originalProblem) {
+      throw new Error("Problem not found");
+    }
+
+    // Create a copy of the problem with new classroom and creator
+    const problemCopy = {
+      title: originalProblem.title,
+      description: originalProblem.description,
+      difficulty: originalProblem.difficulty,
+      points: originalProblem.points,
+      timeLimit: originalProblem.timeLimit,
+      classroomId: targetClassroomId,
+      createdBy,
+      testCases: originalProblem.testCases,
+      starterCode: originalProblem.starterCode,
+      scheduledAt: includeSchedule ? originalProblem.scheduledAt : null,
+    };
+
+    const [newProblem] = await db.insert(problems).values(problemCopy).returning();
+    return newProblem;
   }
 
   async createSubmission(

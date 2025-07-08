@@ -30,6 +30,7 @@ import {
   Settings,
   Lock,
   Calendar,
+  Copy,
 } from "lucide-react";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
@@ -41,6 +42,7 @@ import { z } from "zod";
 import { useState, useEffect } from "react";
 import { formatDistanceToNow, isPast } from "date-fns";
 import Leaderboard from "@/components/leaderboard";
+import CopyProblemModal from "@/components/copy-problem-modal";
 
 const classroomUpdateSchema = z.object({
   name: z.string().min(1, "Classroom name is required"),
@@ -55,6 +57,13 @@ export default function Classroom() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [copyProblemModal, setCopyProblemModal] = useState<{
+    isOpen: boolean;
+    problem: any;
+  }>({
+    isOpen: false,
+    problem: null,
+  });
 
   const { data: classroom, isLoading: classroomLoading } = useQuery({
     queryKey: [`/api/classrooms/${classroomId}`],
@@ -251,6 +260,20 @@ export default function Classroom() {
     }
   };
 
+  const handleCopyProblem = (problem: any) => {
+    setCopyProblemModal({
+      isOpen: true,
+      problem,
+    });
+  };
+
+  const handleCloseCopyModal = () => {
+    setCopyProblemModal({
+      isOpen: false,
+      problem: null,
+    });
+  };
+
   return (
     <div className="min-h-screen bg-neutral-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -443,20 +466,30 @@ export default function Classroom() {
                               )}
                               {user?.role === "teacher" &&
                                 user?.id === problem.createdBy && (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() =>
-                                      handleDeleteProblem(
-                                        problem.id,
-                                        problem.title,
-                                      )
-                                    }
-                                    disabled={deleteProblemMutation.isPending}
-                                    className="text-red-600 hover:text-red-700"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </Button>
+                                  <>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleCopyProblem(problem)}
+                                      className="text-blue-600 hover:text-blue-700"
+                                    >
+                                      <Copy className="w-4 h-4" />
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() =>
+                                        handleDeleteProblem(
+                                          problem.id,
+                                          problem.title,
+                                        )
+                                      }
+                                      disabled={deleteProblemMutation.isPending}
+                                      className="text-red-600 hover:text-red-700"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                  </>
                                 )}
                             </div>
                           </div>
@@ -582,6 +615,14 @@ export default function Classroom() {
           </div>
         </div>
       </div>
+
+      {/* Copy Problem Modal */}
+      <CopyProblemModal
+        problem={copyProblemModal.problem}
+        isOpen={copyProblemModal.isOpen}
+        onClose={handleCloseCopyModal}
+        currentClassroomId={classroomId}
+      />
     </div>
   );
 }

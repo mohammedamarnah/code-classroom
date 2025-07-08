@@ -483,6 +483,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/problems/:id/copy", requireAuth, async (req: any, res) => {
+    try {
+      const problemId = parseInt(req.params.id);
+      const userId = req.currentUserId;
+      const user = await storage.getUser(userId);
+      const { targetClassroomId, includeSchedule } = req.body;
+
+      if (user?.role !== "teacher") {
+        return res
+          .status(403)
+          .json({ message: "Only teachers can copy problems" });
+      }
+
+      // Check if the problem exists
+      const originalProblem = await storage.getProblem(problemId);
+      if (!originalProblem) {
+        return res.status(404).json({ message: "Problem not found" });
+      }
+
+      // Check if the teacher created this problem
+      if (originalProblem.createdBy !== userId) {
+        return res
+          .status(403)
+          .json({ message: "You can only copy problems you created" });
+      }
+
+      // Check if the target classroom exists and belongs to the teacher
+      const targetClassroom = await storage.getClassroom(targetClassroomId);
+      if (!targetClassroom) {
+        return res.status(404).json({ message: "Target classroom not found" });
+      }
+
+      if (targetClassroom.teacherId !== userId) {
+        return res
+          .status(403)
+          .json({ message: "You can only copy problems to your own classrooms" });
+      }
+
+      // Copy the problem
+      const copiedProblem = await storage.copyProblem(
+        problemId,
+        targetClassroomId,
+        userId,
+        includeSchedule
+      );
+
+      res.json(copiedProblem);
+    } catch (error) {
+      console.error("Error copying problem:", error);
+      res.status(500).json({ message: "Failed to copy problem" });
+    }
+  });
+
   // Test problem route
   app.post("/api/problems/:id/test", async (req: any, res) => {
     try {
