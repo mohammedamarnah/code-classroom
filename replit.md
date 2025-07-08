@@ -133,6 +133,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- July 8, 2025 (5:50 PM): Updated problem statement view to show 2 example test cases
+  - Modified problem solver page to display up to 2 example test cases instead of 1
+  - Updated code editor modal to consistently show 2 examples
+  - Changed headings from "Example:" to "Examples:" for clarity
+  - Added proper numbering (Example 1, Example 2) with consistent styling
+  - Both views now use .slice(0, 2) to show first 2 test cases when available
+
 - July 8, 2025 (4:30 PM): Added comprehensive classroom submissions viewing for teachers
   - Created new API endpoint `/api/classrooms/:id/submissions` with teacher-only authorization
   - Built ClassroomSubmissions component with search, filtering, and detailed viewing
