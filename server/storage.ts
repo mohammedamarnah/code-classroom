@@ -17,7 +17,7 @@ import {
   type Achievement,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, asc, and, sql, count } from "drizzle-orm";
+import { eq, desc, and, sql, count } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -487,7 +487,9 @@ export class DatabaseStorage implements IStorage {
         createdAt: users.createdAt,
         updatedAt: users.updatedAt,
         problemsSolved: count(submissions.id),
-        latestSubmission: sql`MAX(${submissions.submittedAt})`.as('latest_submission'),
+        latestSubmission: sql`MAX(${submissions.submittedAt})`.as(
+          "latest_submission",
+        ),
       })
       .from(classroomEnrollments)
       .innerJoin(users, eq(classroomEnrollments.studentId, users.id))
@@ -505,7 +507,7 @@ export class DatabaseStorage implements IStorage {
         ),
       )
       .groupBy(users.id)
-      .orderBy(desc(users.totalPoints), sql`MAX(${submissions.submittedAt}) ASC`);
+      .orderBy(desc(users.totalPoints), sql`latest_submission ASC`);
 
     return result.map((user, index) => ({ ...user, rank: index + 1 }));
   }

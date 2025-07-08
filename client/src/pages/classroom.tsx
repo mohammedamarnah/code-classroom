@@ -371,9 +371,6 @@ export default function Classroom() {
                                 {problem.points} pts
                               </span>
                             </div>
-                            <p className="text-sm text-neutral-600 mb-3">
-                              {truncateText(problem.description)}
-                            </p>
                             <div className="flex items-center space-x-4 text-xs text-neutral-500">
                               <span>
                                 <Clock className="w-3 h-3 inline mr-1" />
