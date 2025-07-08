@@ -6,22 +6,30 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Edit, Plus, Trash2, Calendar, Clock, Trophy } from "lucide-react";
-import { insertProblemSchema } from "@shared/schema";
+import { Edit, Plus, Minus, Calendar, Clock, Trophy } from "lucide-react";
+import CodeMirror from '@uiw/react-codemirror';
+import { java } from '@codemirror/lang-java';
+import { oneDark } from '@codemirror/theme-one-dark';
+import { indentWithTab } from '@codemirror/commands';
+import { keymap, EditorView } from '@codemirror/view';
 import { z } from "zod";
 
-const editProblemSchema = insertProblemSchema.extend({
-  testCases: z.array(z.object({
-    input: z.string(),
-    expectedOutput: z.string().min(1, "Expected output is required")
-  })).min(1, "At least one test case is required"),
+const editProblemSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().min(1, "Description is required"),
+  difficulty: z.enum(["easy", "medium", "hard"]),
+  points: z.number().min(1, "Points must be greater than 0"),
+  timeLimit: z.number().min(1, "Time limit must be greater than 0"),
+  classroomId: z.number().min(1, "Please select a classroom"),
+  starterCode: z.string().optional(),
   scheduledAt: z.string().optional(),
 });
 
@@ -44,7 +52,7 @@ export default function EditProblemModal({
   onClose,
 }: EditProblemModalProps) {
   const [testCases, setTestCases] = useState<TestCase[]>([]);
-  const [showScheduleOption, setShowScheduleOption] = useState(false);
+  const [isScheduled, setIsScheduled] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<EditProblemData>({
@@ -53,12 +61,11 @@ export default function EditProblemModal({
       title: "",
       description: "",
       difficulty: "easy",
-      points: 10,
-      timeLimit: 60,
+      points: 100,
+      timeLimit: 30,
       classroomId: 0,
       starterCode: "",
       scheduledAt: "",
-      testCases: [],
     },
   });
 
@@ -76,10 +83,9 @@ export default function EditProblemModal({
         scheduledAt: problem.scheduledAt 
           ? new Date(problem.scheduledAt).toISOString().slice(0, 16)
           : "",
-        testCases: problem.testCases || [],
       });
       setTestCases(problem.testCases || []);
-      setShowScheduleOption(!!problem.scheduledAt);
+      setIsScheduled(!!problem.scheduledAt);
     }
   }, [problem, isOpen, form]);
 
@@ -111,7 +117,7 @@ export default function EditProblemModal({
     const processedData = {
       ...data,
       testCases,
-      scheduledAt: showScheduleOption && data.scheduledAt ? data.scheduledAt : undefined,
+      scheduledAt: isScheduled && data.scheduledAt ? data.scheduledAt : undefined,
     };
     updateProblemMutation.mutate(processedData);
   };
@@ -124,10 +130,9 @@ export default function EditProblemModal({
     setTestCases(testCases.filter((_, i) => i !== index));
   };
 
-  const updateTestCase = (index: number, field: "input" | "expectedOutput", value: string) => {
-    const updated = testCases.map((tc, i) =>
-      i === index ? { ...tc, [field]: value } : tc
-    );
+  const updateTestCase = (index: number, field: keyof TestCase, value: string) => {
+    const updated = [...testCases];
+    updated[index][field] = value;
     setTestCases(updated);
   };
 
@@ -135,7 +140,7 @@ export default function EditProblemModal({
     onClose();
     form.reset();
     setTestCases([]);
-    setShowScheduleOption(false);
+    setIsScheduled(false);
   };
 
   const getDifficultyColor = (difficulty: string) => {
@@ -265,112 +270,148 @@ export default function EditProblemModal({
           {/* Starter Code */}
           <div className="space-y-2">
             <Label htmlFor="starterCode">Starter Code (Optional)</Label>
-            <Textarea
-              id="starterCode"
-              {...form.register("starterCode")}
-              placeholder="public class Solution { ... }"
-              rows={4}
-              className="font-mono text-sm"
-            />
+            <div className="border rounded-md overflow-hidden">
+              <CodeMirror
+                value={form.watch("starterCode") || ""}
+                height="200px"
+                theme={oneDark}
+                extensions={[
+                  java(),
+                  keymap.of([indentWithTab]),
+                  EditorView.theme({
+                    "&": {
+                      fontSize: "14px",
+                    },
+                    ".cm-content": {
+                      padding: "12px",
+                    },
+                    ".cm-focused": {
+                      outline: "none",
+                    },
+                  }),
+                  EditorView.lineWrapping,
+                ]}
+                onChange={(value) => form.setValue("starterCode", value)}
+                placeholder="public class Solution {
+    // Your starter code here
+    
+}"
+                basicSetup={{
+                  lineNumbers: true,
+                  foldGutter: true,
+                  dropCursor: false,
+                  allowMultipleSelections: false,
+                  indentOnInput: true,
+                  bracketMatching: true,
+                  closeBrackets: true,
+                  autocompletion: true,
+                  highlightSelectionMatches: true,
+                }}
+              />
+            </div>
           </div>
 
           {/* Test Cases */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label>Test Cases</Label>
-              <Button type="button" onClick={addTestCase} variant="outline" size="sm">
-                <Plus className="w-4 h-4 mr-2" />
+            <div className="flex justify-between items-center">
+              <label className="text-sm font-medium text-neutral-700">Test Cases</label>
+              <Button type="button" variant="outline" size="sm" onClick={addTestCase}>
+                <Plus className="w-4 h-4 mr-1" />
                 Add Test Case
               </Button>
             </div>
             
-            {testCases.map((testCase, index) => (
-              <Card key={index}>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm">Test Case {index + 1}</CardTitle>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeTestCase(index)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Input (Optional)</Label>
-                      <Textarea
-                        value={testCase.input}
-                        onChange={(e) => updateTestCase(index, "input", e.target.value)}
-                        placeholder="Test input (leave empty if no input needed)"
-                        rows={3}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Expected Output</Label>
-                      <Textarea
-                        value={testCase.expectedOutput}
-                        onChange={(e) => updateTestCase(index, "expectedOutput", e.target.value)}
-                        placeholder="Expected output"
-                        rows={3}
-                        required
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            <div className="space-y-3">
             
-            {testCases.length === 0 && (
-              <Card className="border-dashed">
-                <CardContent className="flex items-center justify-center py-8">
-                  <p className="text-neutral-500">No test cases added yet. Click "Add Test Case" to create one.</p>
-                </CardContent>
-              </Card>
-            )}
+            {testCases.map((testCase, index) => (
+              <div key={index} className="border border-neutral-200 rounded-lg p-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-medium">Test Case {index + 1}</span>
+                  {testCases.length > 1 && (
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => removeTestCase(index)}
+                    >
+                      <Minus className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-600 mb-1">Input (Optional)</label>
+                    <Textarea
+                      rows={2}
+                      placeholder="Input for this test case (leave empty if no input needed)"
+                      value={testCase.input}
+                      onChange={(e) => updateTestCase(index, 'input', e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-600 mb-1">Expected Output</label>
+                    <Textarea
+                      rows={2}
+                      placeholder="Expected output"
+                      value={testCase.expectedOutput}
+                      onChange={(e) => updateTestCase(index, 'expectedOutput', e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+            </div>
           </div>
 
-          {/* Scheduling */}
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="schedule-problem"
-                checked={showScheduleOption}
-                onCheckedChange={setShowScheduleOption}
+          {/* Schedule Problem */}
+          <div className="border border-neutral-200 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-2">
+                <Calendar className="w-5 h-5 text-neutral-600" />
+                <Label htmlFor="schedule-toggle" className="text-sm font-medium">
+                  Schedule this problem for later
+                </Label>
+              </div>
+              <Switch
+                id="schedule-toggle"
+                checked={isScheduled}
+                onCheckedChange={setIsScheduled}
               />
-              <Label htmlFor="schedule-problem">Schedule this problem</Label>
             </div>
             
-            {showScheduleOption && (
+            {isScheduled && (
               <div className="space-y-2">
-                <Label htmlFor="scheduledAt">Release Date and Time</Label>
+                <Label htmlFor="scheduledAt">Release Date & Time</Label>
                 <Input
                   id="scheduledAt"
                   type="datetime-local"
                   {...form.register("scheduledAt")}
+                  min={(() => {
+                    // Get current time and add 1 minute
+                    const now = new Date();
+                    now.setMinutes(now.getMinutes() + 1);
+                    // Format for datetime-local (which expects local time)
+                    const year = now.getFullYear();
+                    const month = String(now.getMonth() + 1).padStart(2, '0');
+                    const day = String(now.getDate()).padStart(2, '0');
+                    const hours = String(now.getHours()).padStart(2, '0');
+                    const minutes = String(now.getMinutes()).padStart(2, '0');
+                    return `${year}-${month}-${day}T${hours}:${minutes}`;
+                  })()}
                 />
-                <p className="text-sm text-neutral-600">
-                  The problem will be hidden from students until this date and time.
+                <p className="text-xs text-neutral-500 mt-1">
+                  Time shown is in your local timezone ({Intl.DateTimeFormat().resolvedOptions().timeZone})
                 </p>
               </div>
             )}
           </div>
 
-          {/* Actions */}
-          <div className="flex justify-end space-x-2 pt-4">
+          <div className="flex space-x-3">
+            <Button type="submit" disabled={updateProblemMutation.isPending}>
+              {updateProblemMutation.isPending ? "Updating..." : "Update Problem"}
+            </Button>
             <Button type="button" variant="outline" onClick={handleClose}>
               Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={updateProblemMutation.isPending || testCases.length === 0}
-            >
-              {updateProblemMutation.isPending ? "Updating..." : "Update Problem"}
             </Button>
           </div>
         </form>
