@@ -46,7 +46,6 @@ import Leaderboard from "@/components/leaderboard";
 import CopyProblemModal from "@/components/copy-problem-modal";
 import EditProblemModal from "@/components/edit-problem-modal";
 import ClassroomSubmissions from "@/components/classroom-submissions";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const classroomUpdateSchema = z.object({
   name: z.string().min(1, "Classroom name is required"),
@@ -75,6 +74,7 @@ export default function Classroom() {
     isOpen: false,
     problem: null,
   });
+  const [activeView, setActiveView] = useState<"problems" | "submissions">("problems");
 
   const { data: classroom, isLoading: classroomLoading } = useQuery({
     queryKey: [`/api/classrooms/${classroomId}`],
@@ -415,12 +415,27 @@ export default function Classroom() {
           {/* Main Content Section */}
           <div className="lg:col-span-2">
             {isClassroomTeacher ? (
-              <Tabs defaultValue="problems" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="problems">Problems</TabsTrigger>
-                  <TabsTrigger value="submissions">All Submissions</TabsTrigger>
-                </TabsList>
-                <TabsContent value="problems">
+              <div className="w-full">
+                {/* View Toggle Buttons */}
+                <div className="flex mb-6 bg-neutral-100 rounded-lg p-1">
+                  <Button
+                    variant={activeView === "problems" ? "default" : "ghost"}
+                    className={`flex-1 ${activeView === "problems" ? "bg-white shadow-sm" : ""}`}
+                    onClick={() => setActiveView("problems")}
+                  >
+                    Problems
+                  </Button>
+                  <Button
+                    variant={activeView === "submissions" ? "default" : "ghost"}
+                    className={`flex-1 ${activeView === "submissions" ? "bg-white shadow-sm" : ""}`}
+                    onClick={() => setActiveView("submissions")}
+                  >
+                    All Submissions
+                  </Button>
+                </div>
+
+                {/* Problems View */}
+                {activeView === "problems" && (
                   <Card>
                     <CardHeader>
                       <CardTitle>Available Problems</CardTitle>
@@ -540,11 +555,13 @@ export default function Classroom() {
                 )}
                     </CardContent>
                   </Card>
-                </TabsContent>
-                <TabsContent value="submissions">
+                )}
+
+                {/* Submissions View */}
+                {activeView === "submissions" && (
                   <ClassroomSubmissions classroomId={classroomId} />
-                </TabsContent>
-              </Tabs>
+                )}
+              </div>
             ) : (
               <Card>
                 <CardHeader>

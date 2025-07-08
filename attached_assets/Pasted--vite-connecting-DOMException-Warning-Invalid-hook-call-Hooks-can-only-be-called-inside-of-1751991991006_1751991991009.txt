@@ -1,0 +1,49 @@
+[vite] connecting...
+DOMException {}
+
+Warning: Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.
+at t.value (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+Cannot read properties of null (reading 'useContext')
+Warning: Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.
+at t.value (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+Cannot read properties of null (reading 'useContext')
+The above error occurred in the <Tabs> component:
+
+    at https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tabs.js?v=eda52540:261:7
+    at div
+    at div
+    at div
+    at div
+    at Classroom (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/src/pages/classroom.tsx:71:18)
+    at Route (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=5f9e47cc:323:16)
+    at Switch (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=5f9e47cc:379:17)
+    at Router (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/src/App.tsx?v=1Cz-4S6quARREGAUDg39U:32:42)
+    at Provider (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-7SUNRGEF.js?v=5f9e47cc:38:15)
+    at TooltipProvider (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=5f9e47cc:59:5)
+    at QueryClientProvider (https://9851bdaa-dd8c-42a8-ae11-29bde4c553a7-00-15wifpjz27t1s.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=5f9e47cc:2805:3)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
