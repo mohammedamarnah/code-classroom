@@ -320,7 +320,7 @@ export default function ProblemForm({ classrooms, onSuccess, onCancel }: Problem
                         <Input
                           type="datetime-local"
                           {...field}
-                          min={new Date().toISOString().slice(0, 16)}
+                          min={new Date(Date.now() + 60000).toISOString().slice(0, 16)}
                         />
                       </FormControl>
                       <FormMessage />
