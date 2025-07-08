@@ -142,6 +142,9 @@ Preferred communication style: Simple, everyday language.
   - Implemented server-side access control to prevent early access to scheduled problems
   - Teachers who created the problem can still view it before scheduled time
   - Used date-fns library for countdown formatting in user's local timezone
+  - Fixed timezone handling to use client's local timezone for scheduling
+  - Fixed Zod validation to accept string dates and convert to proper timestamps
+  - Successfully deployed to production
 
 - July 3, 2025 (3:22 PM): Added clickable recent submissions with detailed modal view
   - Made recent submission items clickable with hover effects and cursor pointer
