@@ -4,20 +4,27 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Clock, Trophy, Play, Send, CheckCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  Clock,
+  Trophy,
+  Play,
+  Send,
+  CheckCircle,
+} from "lucide-react";
 import { Link } from "wouter";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import CodeMirror from '@uiw/react-codemirror';
-import { java } from '@codemirror/lang-java';
-import { oneDark } from '@codemirror/theme-one-dark';
-import { indentWithTab } from '@codemirror/commands';
-import { keymap, EditorView } from '@codemirror/view';
+import CodeMirror from "@uiw/react-codemirror";
+import { java } from "@codemirror/lang-java";
+import { oneDark } from "@codemirror/theme-one-dark";
+import { indentWithTab } from "@codemirror/commands";
+import { keymap, EditorView } from "@codemirror/view";
 
 export default function ProblemSolver() {
   const { id } = useParams();
   const problemId = parseInt(id!);
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState("");
   const [testResult, setTestResult] = useState<any>(null);
   const { toast } = useToast();
 
@@ -37,28 +44,33 @@ export default function ProblemSolver() {
 
   const testMutation = useMutation({
     mutationFn: async (code: string) => {
-      return await apiRequest(`/api/problems/${problemId}/test`, 'POST', { code });
+      return await apiRequest(`/api/problems/${problemId}/test`, "POST", {
+        code,
+      });
     },
     onSuccess: (result: any) => {
       setTestResult(result);
       toast({
-        title: result.status === 'passed' ? "Test Passed!" : "Test Failed",
-        description: result.status === 'passed' ? "All test cases passed!" : result.error || "Some test cases failed",
-        variant: result.status === 'passed' ? "default" : "destructive"
+        title: result.status === "passed" ? "Test Passed!" : "Test Failed",
+        description:
+          result.status === "passed"
+            ? "All test cases passed!"
+            : result.error || "Some test cases failed",
+        variant: result.status === "passed" ? "default" : "destructive",
       });
     },
     onError: (error: any) => {
       toast({
         title: "Test Error",
         description: error.message || "Failed to run test",
-        variant: "destructive"
+        variant: "destructive",
       });
-    }
+    },
   });
 
   const submitMutation = useMutation({
     mutationFn: async (code: string) => {
-      const response = await apiRequest('POST', '/api/submissions', {
+      const response = await apiRequest("POST", "/api/submissions", {
         problemId,
         code,
       });
@@ -66,16 +78,17 @@ export default function ProblemSolver() {
     },
     onSuccess: (submission) => {
       toast({
-        title: submission.status === 'passed' ? "Success!" : "Try Again",
-        description: submission.status === 'passed' 
-          ? `Great job! You earned ${submission.pointsEarned} points.`
-          : submission.error || "Your solution didn't pass all test cases.",
-        variant: submission.status === 'passed' ? "default" : "destructive",
+        title: submission.status === "passed" ? "Success!" : "Try Again",
+        description:
+          submission.status === "passed"
+            ? `Great job! You earned ${submission.pointsEarned} points.`
+            : submission.error || "Your solution didn't pass all test cases.",
+        variant: submission.status === "passed" ? "default" : "destructive",
       });
-      
+
       // Invalidate related queries
-      queryClient.invalidateQueries({ queryKey: ['/api/submissions'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/classrooms'] });
+      queryClient.invalidateQueries({ queryKey: ["/api/submissions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/classrooms"] });
     },
     onError: (error) => {
       toast({
@@ -99,10 +112,14 @@ export default function ProblemSolver() {
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'easy': return 'bg-secondary text-white';
-      case 'medium': return 'bg-accent text-white';
-      case 'hard': return 'bg-red-500 text-white';
-      default: return 'bg-neutral-500 text-white';
+      case "easy":
+        return "bg-secondary text-white";
+      case "medium":
+        return "bg-accent text-white";
+      case "hard":
+        return "bg-red-500 text-white";
+      default:
+        return "bg-neutral-500 text-white";
     }
   };
 
@@ -127,7 +144,7 @@ export default function ProblemSolver() {
       });
       return;
     }
-    
+
     submitMutation.mutate(code);
   };
 
@@ -145,13 +162,20 @@ export default function ProblemSolver() {
             </Link>
             <div>
               <div className="flex items-center space-x-3 mb-2">
-                <h1 className="text-3xl font-bold text-neutral-900">{problemData?.title}</h1>
+                <h1 className="text-3xl font-bold text-neutral-900">
+                  {problemData?.title}
+                </h1>
                 <Badge className={getDifficultyColor(problemData?.difficulty)}>
                   {problemData?.difficulty}
                 </Badge>
-                <span className="text-sm text-accent font-medium">{problemData?.points} points</span>
+                <span className="text-sm text-accent font-medium">
+                  {problemData?.points} points
+                </span>
                 {problemData?.hasSolved && (
-                  <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-300">
+                  <Badge
+                    variant="secondary"
+                    className="bg-green-100 text-green-800 border-green-300"
+                  >
                     <CheckCircle className="w-3 h-3 mr-1" />
                     Solved
                   </Badge>
@@ -177,10 +201,12 @@ export default function ProblemSolver() {
               <div className="whitespace-pre-wrap text-neutral-600">
                 {problemData?.description}
               </div>
-              
+
               {problemData?.testCases && problemData.testCases.length > 0 && (
                 <div className="mt-6">
-                  <h4 className="font-medium text-neutral-900 mb-3">Example:</h4>
+                  <h4 className="font-medium text-neutral-900 mb-3">
+                    Example:
+                  </h4>
                   <div className="bg-neutral-100 p-3 rounded text-sm font-mono">
                     {(problemData.testCases as any[])[0]?.input && (
                       <div className="mb-2">
@@ -196,7 +222,8 @@ export default function ProblemSolver() {
                         {(problemData.testCases as any[])[0]?.expectedOutput}
                       </pre>
                       <div className="text-xs text-neutral-500 mt-1">
-                        Note: Pay attention to line breaks and spacing in the output format
+                        Note: Pay attention to line breaks and spacing in the
+                        output format
                       </div>
                     </div>
                   </div>
@@ -213,25 +240,13 @@ export default function ProblemSolver() {
                   <CardTitle>Your Solution</CardTitle>
                   {problemData?.hasSolved && (
                     <p className="text-sm text-neutral-500 mt-1">
-                      You've already earned points for this problem. You can still submit for practice!
+                      You've already earned points for this problem. You can
+                      still submit for practice!
                     </p>
                   )}
                 </div>
                 <div className="flex space-x-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={handleTest}
-                    disabled={submitMutation.isPending || testMutation.isPending || !code.trim()}
-                  >
-                    {testMutation.isPending ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-neutral-600 mr-1" />
-                    ) : (
-                      <Play className="w-4 h-4 mr-1" />
-                    )}
-                    Test
-                  </Button>
-                  <Button 
+                  <Button
                     size="sm"
                     onClick={handleSubmit}
                     disabled={submitMutation.isPending}
@@ -256,25 +271,28 @@ export default function ProblemSolver() {
                     java(),
                     keymap.of([indentWithTab]),
                     EditorView.theme({
-                      '&': {
-                        fontSize: '14px'
+                      "&": {
+                        fontSize: "14px",
                       },
-                      '.cm-content': {
-                        padding: '12px'
+                      ".cm-content": {
+                        padding: "12px",
                       },
-                      '.cm-focused': {
-                        outline: 'none'
-                      }
+                      ".cm-focused": {
+                        outline: "none",
+                      },
                     }),
-                    EditorView.lineWrapping
+                    EditorView.lineWrapping,
                   ]}
                   onChange={(value) => setCode(value)}
-                  placeholder={problemData?.starterCode || `public class Solution {
+                  placeholder={
+                    problemData?.starterCode ||
+                    `public class Solution {
     public static void main(String[] args) {
         // Your code here
         
     }
-}`}
+}`
+                  }
                   basicSetup={{
                     lineNumbers: true,
                     foldGutter: true,
@@ -284,7 +302,7 @@ export default function ProblemSolver() {
                     bracketMatching: true,
                     closeBrackets: true,
                     autocompletion: true,
-                    highlightSelectionMatches: true
+                    highlightSelectionMatches: true,
                   }}
                 />
               </div>
@@ -302,7 +320,9 @@ export default function ProblemSolver() {
                   >
                     <div className="font-medium mb-1">
                       Status:{" "}
-                      {testResult.status === "passed" ? "✅ Passed" : "❌ Failed"}
+                      {testResult.status === "passed"
+                        ? "✅ Passed"
+                        : "❌ Failed"}
                     </div>
                     {testResult.executionTime && (
                       <div className="text-sm">
@@ -319,47 +339,67 @@ export default function ProblemSolver() {
                     )}
                     {testResult.error && (
                       <div className="mt-2">
-                        <div className="text-sm font-medium">Error Details:</div>
+                        <div className="text-sm font-medium">
+                          Error Details:
+                        </div>
                         <pre className="text-xs bg-white p-2 rounded mt-1 whitespace-pre-wrap border font-mono">
                           {testResult.error}
                         </pre>
                       </div>
                     )}
-                    {testResult.testCaseResults && testResult.testCaseResults.length > 0 && (
-                      <div className="mt-3">
-                        <div className="text-sm font-medium mb-2">Test Case Details:</div>
-                        <div className="space-y-2">
-                          {testResult.testCaseResults.map((result: any, index: number) => (
-                            <div key={index} className="bg-white p-2 rounded border">
-                              <div className="text-xs font-medium mb-1">Test Case {index + 1}</div>
-                              {result.input && (
-                                <div className="mb-1">
-                                  <span className="text-xs font-medium">Input:</span>
-                                  <pre className="text-xs bg-neutral-50 p-1 rounded mt-1 whitespace-pre-wrap font-mono">
-                                    {result.input}
-                                  </pre>
+                    {testResult.testCaseResults &&
+                      testResult.testCaseResults.length > 0 && (
+                        <div className="mt-3">
+                          <div className="text-sm font-medium mb-2">
+                            Test Case Details:
+                          </div>
+                          <div className="space-y-2">
+                            {testResult.testCaseResults.map(
+                              (result: any, index: number) => (
+                                <div
+                                  key={index}
+                                  className="bg-white p-2 rounded border"
+                                >
+                                  <div className="text-xs font-medium mb-1">
+                                    Test Case {index + 1}
+                                  </div>
+                                  {result.input && (
+                                    <div className="mb-1">
+                                      <span className="text-xs font-medium">
+                                        Input:
+                                      </span>
+                                      <pre className="text-xs bg-neutral-50 p-1 rounded mt-1 whitespace-pre-wrap font-mono">
+                                        {result.input}
+                                      </pre>
+                                    </div>
+                                  )}
+                                  <div className="mb-1">
+                                    <span className="text-xs font-medium">
+                                      Expected Output:
+                                    </span>
+                                    <pre className="text-xs bg-neutral-50 p-1 rounded mt-1 whitespace-pre-wrap font-mono">
+                                      {result.expectedOutput}
+                                    </pre>
+                                  </div>
+                                  <div>
+                                    <span className="text-xs font-medium">
+                                      Your Output:
+                                    </span>
+                                    <pre className="text-xs bg-neutral-50 p-1 rounded mt-1 whitespace-pre-wrap font-mono">
+                                      {result.actualOutput}
+                                    </pre>
+                                  </div>
+                                  <div
+                                    className={`text-xs mt-1 font-medium ${result.passed ? "text-green-600" : "text-red-600"}`}
+                                  >
+                                    {result.passed ? "✅ Passed" : "❌ Failed"}
+                                  </div>
                                 </div>
-                              )}
-                              <div className="mb-1">
-                                <span className="text-xs font-medium">Expected Output:</span>
-                                <pre className="text-xs bg-neutral-50 p-1 rounded mt-1 whitespace-pre-wrap font-mono">
-                                  {result.expectedOutput}
-                                </pre>
-                              </div>
-                              <div>
-                                <span className="text-xs font-medium">Your Output:</span>
-                                <pre className="text-xs bg-neutral-50 p-1 rounded mt-1 whitespace-pre-wrap font-mono">
-                                  {result.actualOutput}
-                                </pre>
-                              </div>
-                              <div className={`text-xs mt-1 font-medium ${result.passed ? 'text-green-600' : 'text-red-600'}`}>
-                                {result.passed ? '✅ Passed' : '❌ Failed'}
-                              </div>
-                            </div>
-                          ))}
+                              ),
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
                   </div>
                 </div>
               )}
