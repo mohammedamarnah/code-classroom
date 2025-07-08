@@ -394,6 +394,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const problem = await storage.createProblem({
         ...problemData,
         createdBy: userId,
+        scheduledAt: problemData.scheduledAt ? new Date(problemData.scheduledAt) : null,
       });
 
       res.json(problem);

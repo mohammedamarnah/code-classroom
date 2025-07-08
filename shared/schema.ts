@@ -167,7 +167,9 @@ export const emailSignupSchema = createInsertSchema(users).pick({
   firstName: z.string().min(1, "Name is required"),
 });
 export const insertClassroomSchema = createInsertSchema(classrooms).omit({ id: true, inviteCode: true, createdAt: true, teacherId: true });
-export const insertProblemSchema = createInsertSchema(problems).omit({ id: true, createdAt: true, createdBy: true });
+export const insertProblemSchema = createInsertSchema(problems).omit({ id: true, createdAt: true, createdBy: true }).extend({
+  scheduledAt: z.string().nullable().optional(),
+});
 export const insertSubmissionSchema = createInsertSchema(submissions).omit({ id: true, submittedAt: true, studentId: true, status: true, pointsEarned: true, executionTime: true, output: true, error: true });
 export const insertEnrollmentSchema = createInsertSchema(classroomEnrollments).omit({ id: true, enrolledAt: true });
 
