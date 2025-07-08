@@ -205,27 +205,36 @@ export default function ProblemSolver() {
               {problemData?.testCases && problemData.testCases.length > 0 && (
                 <div className="mt-6">
                   <h4 className="font-medium text-neutral-900 mb-3">
-                    Example:
+                    Examples:
                   </h4>
-                  <div className="bg-neutral-100 p-3 rounded text-sm font-mono">
-                    {(problemData.testCases as any[])[0]?.input && (
-                      <div className="mb-2">
-                        <strong>Input:</strong>
-                        <pre className="mt-1 whitespace-pre-wrap text-neutral-700 bg-white p-2 rounded border">
-                          {(problemData.testCases as any[])[0]?.input}
-                        </pre>
+                  <div className="space-y-4">
+                    {(problemData.testCases as any[]).slice(0, 2).map((testCase, index) => (
+                      <div key={index} className="bg-neutral-100 p-3 rounded text-sm font-mono">
+                        <div className="font-medium text-neutral-800 mb-2">
+                          Example {index + 1}:
+                        </div>
+                        {testCase?.input && (
+                          <div className="mb-2">
+                            <strong>Input:</strong>
+                            <pre className="mt-1 whitespace-pre-wrap text-neutral-700 bg-white p-2 rounded border">
+                              {testCase.input}
+                            </pre>
+                          </div>
+                        )}
+                        <div>
+                          <strong>Expected Output:</strong>
+                          <pre className="mt-1 whitespace-pre-wrap text-neutral-700 bg-white p-2 rounded border">
+                            {testCase.expectedOutput}
+                          </pre>
+                          {index === 0 && (
+                            <div className="text-xs text-neutral-500 mt-1">
+                              Note: Pay attention to line breaks and spacing in the
+                              output format
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    )}
-                    <div>
-                      <strong>Expected Output:</strong>
-                      <pre className="mt-1 whitespace-pre-wrap text-neutral-700 bg-white p-2 rounded border">
-                        {(problemData.testCases as any[])[0]?.expectedOutput}
-                      </pre>
-                      <div className="text-xs text-neutral-500 mt-1">
-                        Note: Pay attention to line breaks and spacing in the
-                        output format
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </div>
               )}

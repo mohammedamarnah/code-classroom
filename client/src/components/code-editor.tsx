@@ -126,15 +126,23 @@ export default function CodeEditor({
 
             {problem.testCases && problem.testCases.length > 0 && (
               <div className="mt-6">
-                <h5 className="font-medium text-neutral-900 mb-2">Example:</h5>
-                <div className="bg-neutral-100 p-3 rounded text-sm font-mono">
-                  <div>
-                    <strong>Input:</strong> {problem.testCases[0]?.input}
-                  </div>
-                  <div>
-                    <strong>Output:</strong>{" "}
-                    {problem.testCases[0]?.expectedOutput}
-                  </div>
+                <h5 className="font-medium text-neutral-900 mb-2">Examples:</h5>
+                <div className="space-y-3">
+                  {problem.testCases.slice(0, 2).map((testCase: any, index: number) => (
+                    <div key={index} className="bg-neutral-100 p-3 rounded text-sm font-mono">
+                      <div className="font-medium text-neutral-800 mb-2">
+                        Example {index + 1}:
+                      </div>
+                      {testCase?.input && (
+                        <div className="mb-1">
+                          <strong>Input:</strong> {testCase.input}
+                        </div>
+                      )}
+                      <div>
+                        <strong>Output:</strong> {testCase.expectedOutput}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
