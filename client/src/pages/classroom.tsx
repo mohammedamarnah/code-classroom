@@ -28,6 +28,8 @@ import {
   Trash2,
   Edit2,
   Settings,
+  Lock,
+  Calendar,
 } from "lucide-react";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
@@ -37,6 +39,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState, useEffect } from "react";
+import { formatDistanceToNow, isPast } from "date-fns";
+import Leaderboard from "@/components/leaderboard";
 
 const classroomUpdateSchema = z.object({
   name: z.string().min(1, "Classroom name is required"),
@@ -192,6 +196,30 @@ export default function Classroom() {
   // Check if current user is the teacher of this classroom
   const isClassroomTeacher =
     user?.role === "teacher" && user?.id === classroom?.teacherId;
+
+  // State for countdown timers
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Update current time every second for countdown
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  // Check if a problem is available
+  const isProblemAvailable = (problem: any) => {
+    if (!problem.scheduledAt) return true;
+    return isPast(new Date(problem.scheduledAt));
+  };
+
+  // Get countdown text for scheduled problems
+  const getCountdownText = (scheduledAt: string) => {
+    const scheduledDate = new Date(scheduledAt);
+    return `Available in ${formatDistanceToNow(scheduledDate)}`;
+  };
 
   // Utility function to truncate text
   const truncateText = (text: string, maxLength: number = 120) => {
@@ -349,60 +377,92 @@ export default function Classroom() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {problems?.map((problem: any) => (
-                      <div
-                        key={problem.id}
-                        className="border border-neutral-200 rounded-lg p-4 hover:shadow-md transition-shadow"
-                      >
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-3 mb-2">
-                              <h4 className="font-semibold text-neutral-900">
-                                {problem.title}
-                              </h4>
-                              <Badge
-                                className={getDifficultyColor(
-                                  problem.difficulty,
-                                )}
-                              >
-                                {problem.difficulty}
-                              </Badge>
-                              <span className="text-sm text-accent font-medium">
-                                {problem.points} pts
-                              </span>
-                            </div>
-                            <div className="flex items-center space-x-4 text-xs text-neutral-500">
-                              <span>
-                                <Clock className="w-3 h-3 inline mr-1" />
-                                {problem.timeLimit} seconds
-                              </span>
-                            </div>
-                          </div>
-                          <div className="flex items-center space-x-2 ml-4">
-                            <Link href={`/problem/${problem.id}`}>
-                              <Button>Solve</Button>
-                            </Link>
-                            {user?.role === "teacher" &&
-                              user?.id === problem.createdBy && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() =>
-                                    handleDeleteProblem(
-                                      problem.id,
-                                      problem.title,
-                                    )
+                    {problems?.map((problem: any) => {
+                      const isAvailable = isProblemAvailable(problem);
+                      return (
+                        <div
+                          key={problem.id}
+                          className={`border rounded-lg p-4 transition-all ${
+                            isAvailable
+                              ? "border-neutral-200 hover:shadow-md"
+                              : "border-neutral-200 bg-neutral-50"
+                          }`}
+                        >
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-3 mb-2">
+                                <h4 className={`font-semibold ${
+                                  isAvailable ? "text-neutral-900" : "text-neutral-500"
+                                }`}>
+                                  {problem.title}
+                                </h4>
+                                <Badge
+                                  className={
+                                    isAvailable
+                                      ? getDifficultyColor(problem.difficulty)
+                                      : "bg-neutral-300 text-neutral-600"
                                   }
-                                  disabled={deleteProblemMutation.isPending}
-                                  className="text-red-600 hover:text-red-700"
                                 >
-                                  <Trash2 className="w-4 h-4" />
+                                  {problem.difficulty}
+                                </Badge>
+                                <span className={`text-sm font-medium ${
+                                  isAvailable ? "text-accent" : "text-neutral-500"
+                                }`}>
+                                  {problem.points} pts
+                                </span>
+                                {!isAvailable && (
+                                  <Badge variant="outline" className="text-orange-600 border-orange-300">
+                                    <Lock className="w-3 h-3 mr-1" />
+                                    Scheduled
+                                  </Badge>
+                                )}
+                              </div>
+                              <div className="flex items-center space-x-4 text-xs text-neutral-500">
+                                <span>
+                                  <Clock className="w-3 h-3 inline mr-1" />
+                                  {problem.timeLimit} seconds
+                                </span>
+                                {!isAvailable && problem.scheduledAt && (
+                                  <span className="text-orange-600 font-medium">
+                                    <Calendar className="w-3 h-3 inline mr-1" />
+                                    {getCountdownText(problem.scheduledAt)}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2 ml-4">
+                              {isAvailable ? (
+                                <Link href={`/problem/${problem.id}`}>
+                                  <Button>Solve</Button>
+                                </Link>
+                              ) : (
+                                <Button disabled variant="secondary">
+                                  <Lock className="w-4 h-4 mr-2" />
+                                  Locked
                                 </Button>
                               )}
+                              {user?.role === "teacher" &&
+                                user?.id === problem.createdBy && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      handleDeleteProblem(
+                                        problem.id,
+                                        problem.title,
+                                      )
+                                    }
+                                    disabled={deleteProblemMutation.isPending}
+                                    className="text-red-600 hover:text-red-700"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </CardContent>

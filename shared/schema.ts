@@ -69,6 +69,7 @@ export const problems = pgTable("problems", {
   createdBy: varchar("created_by").notNull().references(() => users.id),
   testCases: jsonb("test_cases").notNull(), // Array of {input: string, expectedOutput: string}
   starterCode: text("starter_code"),
+  scheduledAt: timestamp("scheduled_at"), // When the problem becomes available (null = immediately available)
   createdAt: timestamp("created_at").defaultNow(),
 });
 

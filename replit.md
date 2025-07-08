@@ -133,6 +133,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- January 7, 2025 (3:05 AM): Added scheduled problem functionality
+  - Added `scheduledAt` timestamp field to problems table for scheduling release times
+  - Updated problem creation form with scheduling toggle and datetime picker
+  - Modified classroom view to show scheduled problems with countdown timers
+  - Scheduled problems display as locked with countdown until available
+  - Added visual indicators (lock icon, orange badges) for scheduled problems
+  - Implemented server-side access control to prevent early access to scheduled problems
+  - Teachers who created the problem can still view it before scheduled time
+  - Used date-fns library for countdown formatting in user's local timezone
+
 - July 3, 2025 (3:22 PM): Added clickable recent submissions with detailed modal view
   - Made recent submission items clickable with hover effects and cursor pointer
   - Created comprehensive SubmissionDetails modal showing submission code, output, errors, and metadata

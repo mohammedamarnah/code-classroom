@@ -422,10 +422,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const problemId = parseInt(req.params.id);
       const userId = req.currentUserId;
+      const user = await storage.getUser(userId);
       const problem = await storage.getProblem(problemId);
 
       if (!problem) {
         return res.status(404).json({ message: "Problem not found" });
+      }
+
+      // Check if the problem is scheduled and not yet available
+      if (problem.scheduledAt && new Date(problem.scheduledAt) > new Date()) {
+        // Allow teachers who created the problem to view it
+        if (user?.role !== "teacher" || problem.createdBy !== userId) {
+          return res.status(403).json({ message: "This problem is not yet available" });
+        }
       }
 
       // Check if user has already solved this problem

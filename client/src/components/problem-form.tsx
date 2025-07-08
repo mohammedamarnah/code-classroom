@@ -11,12 +11,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Minus } from "lucide-react";
+import { Plus, Minus, Calendar, Clock } from "lucide-react";
 import CodeMirror from '@uiw/react-codemirror';
 import { java } from '@codemirror/lang-java';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { indentWithTab } from '@codemirror/commands';
 import { keymap, EditorView } from '@codemirror/view';
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { format } from "date-fns";
 
 const problemSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -26,6 +29,7 @@ const problemSchema = z.object({
   timeLimit: z.number().min(1, "Time limit must be greater than 0"),
   classroomId: z.number().min(1, "Please select a classroom"),
   starterCode: z.string().optional(),
+  scheduledAt: z.string().optional(),
 });
 
 interface TestCase {
@@ -41,6 +45,7 @@ interface ProblemFormProps {
 
 export default function ProblemForm({ classrooms, onSuccess, onCancel }: ProblemFormProps) {
   const [testCases, setTestCases] = useState<TestCase[]>([{ input: "", expectedOutput: "" }]);
+  const [isScheduled, setIsScheduled] = useState(false);
   const { toast } = useToast();
 
   const form = useForm({
@@ -53,6 +58,7 @@ export default function ProblemForm({ classrooms, onSuccess, onCancel }: Problem
       timeLimit: 30,
       classroomId: 0,
       starterCode: "",
+      scheduledAt: "",
     },
   });
 
@@ -105,6 +111,7 @@ export default function ProblemForm({ classrooms, onSuccess, onCancel }: Problem
     createProblemMutation.mutate({
       ...data,
       testCases,
+      scheduledAt: isScheduled && data.scheduledAt ? new Date(data.scheduledAt).toISOString() : null,
     });
   };
 
@@ -285,6 +292,43 @@ export default function ProblemForm({ classrooms, onSuccess, onCancel }: Problem
                 </FormItem>
               )}
             />
+
+            {/* Schedule Problem */}
+            <div className="border border-neutral-200 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-2">
+                  <Calendar className="w-5 h-5 text-neutral-600" />
+                  <Label htmlFor="schedule-toggle" className="text-sm font-medium">
+                    Schedule this problem for later
+                  </Label>
+                </div>
+                <Switch
+                  id="schedule-toggle"
+                  checked={isScheduled}
+                  onCheckedChange={setIsScheduled}
+                />
+              </div>
+              
+              {isScheduled && (
+                <FormField
+                  control={form.control}
+                  name="scheduledAt"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Release Date & Time</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="datetime-local"
+                          {...field}
+                          min={new Date().toISOString().slice(0, 16)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+            </div>
 
             {/* Test Cases */}
             <div>
