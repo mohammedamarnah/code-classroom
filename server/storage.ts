@@ -94,6 +94,9 @@ export interface IStorage {
   getRecentSubmissions(
     limit: number,
   ): Promise<(Submission & { student: User; problem: Problem })[]>;
+  getClassroomSubmissions(
+    classroomId: number,
+  ): Promise<(Submission & { student: User; problem: Problem })[]>;
   hasUserEarnedPointsForProblem(
     userId: string,
     problemId: number,
@@ -496,6 +499,33 @@ export class DatabaseStorage implements IStorage {
       .innerJoin(problems, eq(submissions.problemId, problems.id))
       .orderBy(desc(submissions.submittedAt))
       .limit(limit);
+
+    return result;
+  }
+
+  async getClassroomSubmissions(
+    classroomId: number,
+  ): Promise<(Submission & { student: User; problem: Problem })[]> {
+    const result = await db
+      .select({
+        id: submissions.id,
+        problemId: submissions.problemId,
+        studentId: submissions.studentId,
+        code: submissions.code,
+        status: submissions.status,
+        pointsEarned: submissions.pointsEarned,
+        executionTime: submissions.executionTime,
+        output: submissions.output,
+        error: submissions.error,
+        submittedAt: submissions.submittedAt,
+        student: users,
+        problem: problems,
+      })
+      .from(submissions)
+      .innerJoin(users, eq(submissions.studentId, users.id))
+      .innerJoin(problems, eq(submissions.problemId, problems.id))
+      .where(eq(problems.classroomId, classroomId))
+      .orderBy(desc(submissions.submittedAt));
 
     return result;
   }

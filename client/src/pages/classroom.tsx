@@ -45,6 +45,8 @@ import { formatDistanceToNow, isPast } from "date-fns";
 import Leaderboard from "@/components/leaderboard";
 import CopyProblemModal from "@/components/copy-problem-modal";
 import EditProblemModal from "@/components/edit-problem-modal";
+import ClassroomSubmissions from "@/components/classroom-submissions";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const classroomUpdateSchema = z.object({
   name: z.string().min(1, "Classroom name is required"),
@@ -410,13 +412,20 @@ export default function Classroom() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Problems Section */}
+          {/* Main Content Section */}
           <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Available Problems</CardTitle>
-              </CardHeader>
-              <CardContent>
+            {isClassroomTeacher ? (
+              <Tabs defaultValue="problems" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="problems">Problems</TabsTrigger>
+                  <TabsTrigger value="submissions">All Submissions</TabsTrigger>
+                </TabsList>
+                <TabsContent value="problems">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Available Problems</CardTitle>
+                    </CardHeader>
+                    <CardContent>
                 {problems?.length === 0 ? (
                   <div className="text-center py-8 text-neutral-500">
                     No problems available yet.
@@ -529,8 +538,99 @@ export default function Classroom() {
                     })}
                   </div>
                 )}
-              </CardContent>
-            </Card>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                <TabsContent value="submissions">
+                  <ClassroomSubmissions classroomId={classroomId} />
+                </TabsContent>
+              </Tabs>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Available Problems</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {problems?.length === 0 ? (
+                    <div className="text-center py-8 text-neutral-500">
+                      No problems available yet.
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {problems?.map((problem: any) => {
+                        const isAvailable = isProblemAvailable(problem);
+                        return (
+                          <div
+                            key={problem.id}
+                            className={`border rounded-lg p-4 transition-all ${
+                              isAvailable
+                                ? "border-neutral-200 hover:shadow-md"
+                                : "border-neutral-200 bg-neutral-50"
+                            }`}
+                          >
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-3 mb-2">
+                                  <h4 className={`font-semibold ${
+                                    isAvailable ? "text-neutral-900" : "text-neutral-500"
+                                  }`}>
+                                    {problem.title}
+                                  </h4>
+                                  <Badge
+                                    className={
+                                      isAvailable
+                                        ? getDifficultyColor(problem.difficulty)
+                                        : "bg-neutral-300 text-neutral-600"
+                                    }
+                                  >
+                                    {problem.difficulty}
+                                  </Badge>
+                                  <span className={`text-sm font-medium ${
+                                    isAvailable ? "text-accent" : "text-neutral-500"
+                                  }`}>
+                                    {problem.points} pts
+                                  </span>
+                                  {!isAvailable && (
+                                    <Badge variant="outline" className="text-orange-600 border-orange-300">
+                                      <Lock className="w-3 h-3 mr-1" />
+                                      Scheduled
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div className="flex items-center space-x-4 text-xs text-neutral-500">
+                                  <span>
+                                    <Clock className="w-3 h-3 inline mr-1" />
+                                    {problem.timeLimit} seconds
+                                  </span>
+                                  {!isAvailable && problem.scheduledAt && (
+                                    <span className="text-orange-600 font-medium">
+                                      <Calendar className="w-3 h-3 inline mr-1" />
+                                      {getCountdownText(problem.scheduledAt)}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-2 ml-4">
+                                {isAvailable ? (
+                                  <Link href={`/problem/${problem.id}`}>
+                                    <Button>Solve</Button>
+                                  </Link>
+                                ) : (
+                                  <Button disabled variant="secondary">
+                                    <Lock className="w-4 h-4 mr-2" />
+                                    Locked
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Sidebar */}

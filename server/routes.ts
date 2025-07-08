@@ -708,6 +708,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/classrooms/:id/submissions", requireAuth, async (req: any, res) => {
+    try {
+      const classroomId = parseInt(req.params.id);
+      const userId = req.currentUserId;
+      const user = req.currentUser;
+
+      // Check if user is a teacher
+      if (user?.role !== "teacher") {
+        return res
+          .status(403)
+          .json({ message: "Only teachers can view classroom submissions" });
+      }
+
+      // Check if teacher owns the classroom
+      const classroom = await storage.getClassroom(classroomId);
+      if (!classroom) {
+        return res.status(404).json({ message: "Classroom not found" });
+      }
+
+      if (classroom.teacherId !== userId) {
+        return res
+          .status(403)
+          .json({ message: "You can only view submissions for your own classrooms" });
+      }
+
+      const submissions = await storage.getClassroomSubmissions(classroomId);
+      res.json(submissions);
+    } catch (error) {
+      console.error("Error fetching classroom submissions:", error);
+      res.status(500).json({ message: "Failed to fetch classroom submissions" });
+    }
+  });
+
   // Stats routes
   app.get("/api/stats/teacher", requireAuth, async (req: any, res) => {
     try {
