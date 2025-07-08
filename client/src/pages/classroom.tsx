@@ -74,7 +74,9 @@ export default function Classroom() {
     isOpen: false,
     problem: null,
   });
-  const [activeView, setActiveView] = useState<"problems" | "submissions">("problems");
+  const [activeView, setActiveView] = useState<"problems" | "submissions">(
+    "problems",
+  );
 
   const { data: classroom, isLoading: classroomLoading } = useQuery({
     queryKey: [`/api/classrooms/${classroomId}`],
@@ -420,14 +422,14 @@ export default function Classroom() {
                 <div className="flex mb-6 bg-neutral-100 rounded-lg p-1">
                   <Button
                     variant={activeView === "problems" ? "default" : "ghost"}
-                    className={`flex-1 ${activeView === "problems" ? "bg-white shadow-sm" : ""}`}
+                    className={`flex-1 ${activeView === "problems" ? "bg-white shadow-sm text-black" : ""}`}
                     onClick={() => setActiveView("problems")}
                   >
                     Problems
                   </Button>
                   <Button
                     variant={activeView === "submissions" ? "default" : "ghost"}
-                    className={`flex-1 ${activeView === "submissions" ? "bg-white shadow-sm" : ""}`}
+                    className={`flex-1 ${activeView === "submissions" ? "bg-white shadow-sm text-black" : ""}`}
                     onClick={() => setActiveView("submissions")}
                   >
                     All Submissions
@@ -441,118 +443,139 @@ export default function Classroom() {
                       <CardTitle>Available Problems</CardTitle>
                     </CardHeader>
                     <CardContent>
-                {problems?.length === 0 ? (
-                  <div className="text-center py-8 text-neutral-500">
-                    No problems available yet.
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {problems?.map((problem: any) => {
-                      const isAvailable = isProblemAvailable(problem);
-                      return (
-                        <div
-                          key={problem.id}
-                          className={`border rounded-lg p-4 transition-all ${
-                            isAvailable
-                              ? "border-neutral-200 hover:shadow-md"
-                              : "border-neutral-200 bg-neutral-50"
-                          }`}
-                        >
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                              <div className="flex items-center space-x-3 mb-2">
-                                <h4 className={`font-semibold ${
-                                  isAvailable ? "text-neutral-900" : "text-neutral-500"
-                                }`}>
-                                  {problem.title}
-                                </h4>
-                                <Badge
-                                  className={
-                                    isAvailable
-                                      ? getDifficultyColor(problem.difficulty)
-                                      : "bg-neutral-300 text-neutral-600"
-                                  }
-                                >
-                                  {problem.difficulty}
-                                </Badge>
-                                <span className={`text-sm font-medium ${
-                                  isAvailable ? "text-accent" : "text-neutral-500"
-                                }`}>
-                                  {problem.points} pts
-                                </span>
-                                {!isAvailable && (
-                                  <Badge variant="outline" className="text-orange-600 border-orange-300">
-                                    <Lock className="w-3 h-3 mr-1" />
-                                    Scheduled
-                                  </Badge>
-                                )}
-                              </div>
-                              <div className="flex items-center space-x-4 text-xs text-neutral-500">
-                                <span>
-                                  <Clock className="w-3 h-3 inline mr-1" />
-                                  {problem.timeLimit} seconds
-                                </span>
-                                {!isAvailable && problem.scheduledAt && (
-                                  <span className="text-orange-600 font-medium">
-                                    <Calendar className="w-3 h-3 inline mr-1" />
-                                    {getCountdownText(problem.scheduledAt)}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                            <div className="flex items-center space-x-2 ml-4">
-                              {isAvailable ? (
-                                <Link href={`/problem/${problem.id}`}>
-                                  <Button>Solve</Button>
-                                </Link>
-                              ) : (
-                                <Button disabled variant="secondary">
-                                  <Lock className="w-4 h-4 mr-2" />
-                                  Locked
-                                </Button>
-                              )}
-                              {user?.role === "teacher" &&
-                                user?.id === problem.createdBy && (
-                                  <>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => handleEditProblem(problem)}
-                                      className="text-green-600 hover:text-green-700"
-                                    >
-                                      <Edit className="w-4 h-4" />
-                                    </Button>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => handleCopyProblem(problem)}
-                                      className="text-blue-600 hover:text-blue-700"
-                                    >
-                                      <Copy className="w-4 h-4" />
-                                    </Button>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() =>
-                                        handleDeleteProblem(
-                                          problem.id,
-                                          problem.title,
-                                        )
-                                      }
-                                      disabled={deleteProblemMutation.isPending}
-                                      className="text-red-600 hover:text-red-700"
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </Button>
-                                  </>
-                                )}
-                            </div>
-                          </div>
+                      {problems?.length === 0 ? (
+                        <div className="text-center py-8 text-neutral-500">
+                          No problems available yet.
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
+                      ) : (
+                        <div className="space-y-4">
+                          {problems?.map((problem: any) => {
+                            const isAvailable = isProblemAvailable(problem);
+                            return (
+                              <div
+                                key={problem.id}
+                                className={`border rounded-lg p-4 transition-all ${
+                                  isAvailable
+                                    ? "border-neutral-200 hover:shadow-md"
+                                    : "border-neutral-200 bg-neutral-50"
+                                }`}
+                              >
+                                <div className="flex justify-between items-start">
+                                  <div className="flex-1">
+                                    <div className="flex items-center space-x-3 mb-2">
+                                      <h4
+                                        className={`font-semibold ${
+                                          isAvailable
+                                            ? "text-neutral-900"
+                                            : "text-neutral-500"
+                                        }`}
+                                      >
+                                        {problem.title}
+                                      </h4>
+                                      <Badge
+                                        className={
+                                          isAvailable
+                                            ? getDifficultyColor(
+                                                problem.difficulty,
+                                              )
+                                            : "bg-neutral-300 text-neutral-600"
+                                        }
+                                      >
+                                        {problem.difficulty}
+                                      </Badge>
+                                      <span
+                                        className={`text-sm font-medium ${
+                                          isAvailable
+                                            ? "text-accent"
+                                            : "text-neutral-500"
+                                        }`}
+                                      >
+                                        {problem.points} pts
+                                      </span>
+                                      {!isAvailable && (
+                                        <Badge
+                                          variant="outline"
+                                          className="text-orange-600 border-orange-300"
+                                        >
+                                          <Lock className="w-3 h-3 mr-1" />
+                                          Scheduled
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center space-x-4 text-xs text-neutral-500">
+                                      <span>
+                                        <Clock className="w-3 h-3 inline mr-1" />
+                                        {problem.timeLimit} seconds
+                                      </span>
+                                      {!isAvailable && problem.scheduledAt && (
+                                        <span className="text-orange-600 font-medium">
+                                          <Calendar className="w-3 h-3 inline mr-1" />
+                                          {getCountdownText(
+                                            problem.scheduledAt,
+                                          )}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center space-x-2 ml-4">
+                                    {isAvailable ? (
+                                      <Link href={`/problem/${problem.id}`}>
+                                        <Button>Solve</Button>
+                                      </Link>
+                                    ) : (
+                                      <Button disabled variant="secondary">
+                                        <Lock className="w-4 h-4 mr-2" />
+                                        Locked
+                                      </Button>
+                                    )}
+                                    {user?.role === "teacher" &&
+                                      user?.id === problem.createdBy && (
+                                        <>
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() =>
+                                              handleEditProblem(problem)
+                                            }
+                                            className="text-green-600 hover:text-green-700"
+                                          >
+                                            <Edit className="w-4 h-4" />
+                                          </Button>
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() =>
+                                              handleCopyProblem(problem)
+                                            }
+                                            className="text-blue-600 hover:text-blue-700"
+                                          >
+                                            <Copy className="w-4 h-4" />
+                                          </Button>
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() =>
+                                              handleDeleteProblem(
+                                                problem.id,
+                                                problem.title,
+                                              )
+                                            }
+                                            disabled={
+                                              deleteProblemMutation.isPending
+                                            }
+                                            className="text-red-600 hover:text-red-700"
+                                          >
+                                            <Trash2 className="w-4 h-4" />
+                                          </Button>
+                                        </>
+                                      )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 )}
@@ -588,9 +611,13 @@ export default function Classroom() {
                             <div className="flex justify-between items-start">
                               <div className="flex-1">
                                 <div className="flex items-center space-x-3 mb-2">
-                                  <h4 className={`font-semibold ${
-                                    isAvailable ? "text-neutral-900" : "text-neutral-500"
-                                  }`}>
+                                  <h4
+                                    className={`font-semibold ${
+                                      isAvailable
+                                        ? "text-neutral-900"
+                                        : "text-neutral-500"
+                                    }`}
+                                  >
                                     {problem.title}
                                   </h4>
                                   <Badge
@@ -602,13 +629,20 @@ export default function Classroom() {
                                   >
                                     {problem.difficulty}
                                   </Badge>
-                                  <span className={`text-sm font-medium ${
-                                    isAvailable ? "text-accent" : "text-neutral-500"
-                                  }`}>
+                                  <span
+                                    className={`text-sm font-medium ${
+                                      isAvailable
+                                        ? "text-accent"
+                                        : "text-neutral-500"
+                                    }`}
+                                  >
                                     {problem.points} pts
                                   </span>
                                   {!isAvailable && (
-                                    <Badge variant="outline" className="text-orange-600 border-orange-300">
+                                    <Badge
+                                      variant="outline"
+                                      className="text-orange-600 border-orange-300"
+                                    >
                                       <Lock className="w-3 h-3 mr-1" />
                                       Scheduled
                                     </Badge>

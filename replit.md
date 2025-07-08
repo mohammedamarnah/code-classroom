@@ -133,6 +133,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- July 8, 2025 (4:30 PM): Added comprehensive classroom submissions viewing for teachers
+  - Created new API endpoint `/api/classrooms/:id/submissions` with teacher-only authorization
+  - Built ClassroomSubmissions component with search, filtering, and detailed viewing
+  - Added toggle interface between Problems and All Submissions views
+  - Fixed React hooks error by replacing Tabs component with custom toggle buttons
+  - Teachers can now view all student submissions in their classrooms with full details
+  - Includes search by student name/email/problem, filter by status and problem
+  - Detailed submission modal shows code, output, errors, and execution metadata
+  - Successfully tested and deployed with proper permission controls
+
 - July 8, 2025 (4:10 PM): Completed teacher-exclusive classroom management features
   - Enhanced edit modal to exactly match problem creation form
   - Integrated CodeMirror with Java syntax highlighting for starter code editing
