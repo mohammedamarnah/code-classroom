@@ -131,7 +131,55 @@ CodeClassroom is a comprehensive Java programming education platform that combin
 
 Preferred communication style: Simple, everyday language.
 
+## Local Development Setup
+
+### Prerequisites for Local Development
+- **Node.js** (version 18 or higher)
+- **npm** (comes with Node.js)
+- **PostgreSQL database** (local or remote)
+- **Java JDK** (for code execution features)
+
+### Environment Setup for Local Development
+1. **Database Configuration**: 
+   - Set `DATABASE_URL` environment variable with your PostgreSQL connection string
+   - Example: `postgresql://username:password@localhost:5432/database_name`
+
+2. **Optional Environment Variables**:
+   - `SESSION_SECRET`: Custom session secret (defaults to development secret if not provided)
+   - OAuth variables are not required for local development
+
+3. **Database Schema Setup**:
+   ```bash
+   npm run db:push
+   ```
+
+4. **Start Development Server**:
+   ```bash
+   npm run dev
+   ```
+   
+   Application runs on http://localhost:5000
+
+### Authentication in Local Development
+- **OAuth Authentication**: Disabled automatically when Replit environment variables are not detected
+- **Email Authentication**: Fully functional for creating accounts and logging in
+- **Session Management**: Uses PostgreSQL session storage with local-friendly settings
+
+### Key Differences from Production
+- OAuth/SSO authentication is disabled
+- Session cookies use `secure: false` for HTTP development
+- Default session secret provided for convenience
+- Console logging indicates local development mode
+
 ## Recent Changes
+
+- July 11, 2025: Enhanced local development support
+  - Made Replit OAuth authentication optional for local development environments
+  - Added automatic detection of Replit environment variables
+  - Configured session management to work with both HTTP (local) and HTTPS (production)
+  - Added fallback session secret for local development
+  - Email authentication system remains fully functional for local use
+  - Application now starts successfully without OAuth configuration errors
 
 - July 8, 2025 (5:50 PM): Updated problem statement view to show 2 example test cases
   - Modified problem solver page to display up to 2 example test cases instead of 1
